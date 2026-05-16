@@ -12,6 +12,7 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-json
+        exclude: "^.vscode/"
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks
       - id: destroyed-symlinks
