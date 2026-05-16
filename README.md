@@ -21,12 +21,18 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 
 ## Features
 
-- [ ] OTA updates via PlatformIO
+- [x] Cooperative multitasking
+- [x] Module system for different functionalities
+- [x] Button input handling with debounce
 - [ ] Display
+    - [x] SSD1306 OLED display support
     - [ ] Support orginal Sesame faces
+- [ ] OTA updates via PlatformIO
+- [ ] Remote logging
+- [ ] Servo control
 - [ ] Web UI
     - [ ] Websocket
     - [ ] Joystick control
+- [ ] WiFi Improv configuration
 - [ ] MQTT
     - [ ] Home Assistant integration
-- [ ] Servo control
