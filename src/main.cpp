@@ -19,6 +19,7 @@ static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 
 void setup() {
     Serial.begin(115200);
+    Serial.setDebugOutput(true);
     unsigned long start = millis();
     while(!Serial && (millis() - start < 5000)) {
         delay(10);    // wait for serial port to connect. Needed for native USB

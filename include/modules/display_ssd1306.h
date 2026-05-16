@@ -32,8 +32,11 @@ class DisplaySSD1306Module : public Module, public FaceDisplay {
     DisplaySSD1306Module() : Module() {};
 
     void displayFace(FaceID faceId, FaceAnimMode mode = FACE_ANIM_LOOP) override;
-    bool animationFinished() override {
+    bool isAnimationFinished() override {
         return this->faceAnimFinished;
+    }
+    FaceID getCurrentFaceID() override {
+        return this->currentFaceId;
     }
 
   protected:

@@ -23,17 +23,13 @@ class Module : public Thread {
     };
 
   protected:
-    bool setupDone = false;
+    bool setupDone    = false;
+    bool loopOnceFlag = false;
+
     ThreadController * tControl;
 
-    void run() override {
-        if(!setupDone) {
-            this->setup();
-            setupDone = true;
-        }
-        this->loop();
-        this->runned();
-    };
+    void run() override;
+    void loopOnce();
 
     void inline wakeLoop() {
         wakeMainLoop();

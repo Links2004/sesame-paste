@@ -32,7 +32,9 @@ class FaceDisplay {
         display = this;
     }
     virtual void displayFace(FaceID faceId, FaceAnimMode mode = FACE_ANIM_LOOP) = 0;
-    virtual bool animationFinished()                                            = 0;
+    virtual bool isAnimationFinished()                                          = 0;
+    virtual FaceID getCurrentFaceID()                                           = 0;
+    virtual void animationFinishedCallback() {};
 };
 
 extern const FaceEntry faceEntries[];

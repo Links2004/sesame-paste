@@ -16,3 +16,8 @@ static WebSocketModule g_webSocketModule;
 #include "modules/display_ssd1306.h"
 static DisplaySSD1306Module g_displaySSD1306Module;
 #endif
+
+#ifdef ENABLE_NETWORK_MODE
+#include "modules/network_handling.h"
+static NetworkModule g_networkModule;
+#endif

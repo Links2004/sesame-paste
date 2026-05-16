@@ -1,0 +1,10 @@
+[base_esp32]
+; change the password to something else in production
+build_flags =
+	-D ENABLE_OTA
+	-D OTA_PASSWORD=sesameadmin
+
+upload_flags = --auth=sesameadmin
+upload_protocol = espota
+upload_port = sesame-robot.local
+;upload_port = <IP_ADDRESS>

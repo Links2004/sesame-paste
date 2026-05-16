@@ -89,6 +89,7 @@ void DisplaySSD1306Module::loop() {
     if(this->faceAnimFinished) {
         this->enabled  = false;
         this->canSleep = true;
+        this->animationFinishedCallback();
     } else {
         this->enabled  = true;
         this->canSleep = false;

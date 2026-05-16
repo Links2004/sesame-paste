@@ -26,8 +26,14 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 - [x] Button input handling with debounce
 - [ ] Display
     - [x] SSD1306 OLED display support
+    - [ ] OTA progress display
     - [ ] Support orginal Sesame faces
-- [ ] OTA updates via PlatformIO
+- [x] OTA updates via PlatformIO
+- [ ] Global state management
+- [ ] event system
+    - [ ] Button events
+    - [ ] OTA events
+    - [ ] WiFi events
 - [ ] Remote logging
 - [ ] Servo control
 - [ ] Web UI

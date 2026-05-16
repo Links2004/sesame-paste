@@ -1,5 +1,18 @@
 #pragma once
 
+#ifndef __has_include
+#define __has_include(x) 0
+#warning "__has_include not supported"
+#else
+#include "user_config.h"
+#endif
+
+#if __has_include("user_config.h")
+#include "user_config.h"
+#else
+#warning "user_config.h not found"
+#endif
+
 // #define ENABLE_WEBSOCKETS
 
 #if defined(BUTTON_PINS)
