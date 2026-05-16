@@ -45,10 +45,10 @@ void ButtonModule::loop() {
         anyButtonPressed |= pressed;
         if(pressed && !lastButtonState[i]) {
             lastButtonPressTime[i] = millis();
-            Serial.printf("Button %d (%d) pressed!\n", buttonPin[i], i);
+            ESP_LOGI(this->ThreadName, "Button %d (%d) pressed!", buttonPin[i], i);
         } else if(!pressed && lastButtonState[i]) {
             unsigned long pressDuration = millis() - lastButtonPressTime[i];
-            Serial.printf("Button %d (%d) released after %lu ms!\n", buttonPin[i], i, pressDuration);
+            ESP_LOGI(this->ThreadName, "Button %d (%d) released after %lu ms!", buttonPin[i], i, pressDuration);
         }
         lastButtonState[i] = pressed;
     }

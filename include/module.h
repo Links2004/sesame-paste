@@ -31,6 +31,10 @@ class Module : public Thread {
     void run() override;
     void loopOnce();
 
+    virtual String getName() {
+        return ThreadName;
+    };
+
     void inline wakeLoop() {
         wakeMainLoop();
     }

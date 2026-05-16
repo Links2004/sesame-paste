@@ -25,18 +25,22 @@ struct FaceEntry {
 
 class FaceDisplay;
 extern FaceDisplay * display;
+void initFaceEntries();
 
 class FaceDisplay {
   public:
     FaceDisplay() {
         display = this;
+        initFaceEntries();
     }
     virtual void displayFace(FaceID faceId, FaceAnimMode mode = FACE_ANIM_LOOP) = 0;
     virtual bool isAnimationFinished()                                          = 0;
     virtual FaceID getCurrentFaceID()                                           = 0;
-    virtual void animationFinishedCallback() {};
+    virtual void animationFinishedCallback() {
+        ESP_LOGI("FaceDisplay", "Face animation finished");
+    };
 };
 
-extern const FaceEntry faceEntries[];
+extern FaceEntry faceEntries[];
 
 typedef const unsigned char bitmap_t;

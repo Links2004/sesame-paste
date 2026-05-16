@@ -14,7 +14,9 @@
 
 class ButtonModule : public Module {
   public:
-    ButtonModule() : Module() {};
+    ButtonModule() : Module() {
+        ThreadName = "Button";
+    };
     void interruptHandler();
 
   protected:

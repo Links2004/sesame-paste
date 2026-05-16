@@ -45,6 +45,6 @@ void registerModules(ThreadController * tControl) {
 
 void debugPrintModules(Print * printer) {
     for(Module * module : Modules) {
-        printer->printf(F("Module: %p, enabled: %d, canSleep: %d\n"), module, module->enabled, module->canSleep);
+        printer->printf(F("Module: %s (%X), enabled: %d, canSleep: %d\n"), module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
     }
 }

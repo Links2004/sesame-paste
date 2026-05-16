@@ -13,7 +13,9 @@
 
 class NetworkModule : public Module {
   public:
-    NetworkModule() : Module() {};
+    NetworkModule() : Module() {
+        ThreadName = "Network";
+    };
 
   protected:
     String deviceHostname = "sesame-robot";

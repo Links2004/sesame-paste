@@ -10,11 +10,9 @@ void NetworkModule::setup() {
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
         if(event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-            Serial.println("Connected to WiFi network!");
-            Serial.print("IP Address: ");
-            Serial.println(WiFi.localIP());
+            ESP_LOGW(this->ThreadName, "Connected to WiFi network! IP: %s", WiFi.localIP().toString().c_str());
         } else if(event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-            Serial.println("Disconnected from WiFi network.");
+            ESP_LOGW(this->ThreadName, "Disconnected from WiFi network.");
         }
         this->loopOnce();
         this->wakeLoop();

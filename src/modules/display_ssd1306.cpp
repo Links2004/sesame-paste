@@ -7,7 +7,7 @@
 void DisplaySSD1306Module::setup() {
     uint16_t errors = 0;
 
-    Serial.println(F("Initializing SSD1306 display..."));
+    ESP_LOGI(this->ThreadName, "Initializing SSD1306 display...");
     this->display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, SSD1306_RESET_PIN);
 
     // Test and init if display exists on I2C bus.
@@ -17,15 +17,15 @@ void DisplaySSD1306Module::setup() {
             if(this->display.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDR)) {
                 break;
             } else {
-                Serial.println(F("SSD1306 found but failed"));
+                ESP_LOGW(this->ThreadName, "SSD1306 found but failed");
             }
         }
         if(errors++ > 50) {
             this->enabled = false;
-            Serial.println(F("SSD1306 failed, giving up."));
+            ESP_LOGE(this->ThreadName, "SSD1306 failed, giving up.");
             return;
         }
-        Serial.printf(F("SSD1306 (0x%02X) failed, %d retrying...\n"), SSD1306_I2C_ADDR, errors);
+        ESP_LOGW(this->ThreadName, "SSD1306 (0x%02X) failed, %d retrying...", SSD1306_I2C_ADDR, errors);
         delay(1000);
     }
 
@@ -36,69 +36,61 @@ void DisplaySSD1306Module::setup() {
     this->display.println(F("Booting..."));
     this->display.display();
 
-    Serial.println(F("Initializing SSD1306 display... done"));
-    this->displayFace(FACE_ID_idle_blink, FACE_ANIM_ONCE);
+    ESP_LOGI(this->ThreadName, "Initializing SSD1306 display... done");
+    // this->displayFace(FACE_ID_idle_blink, FACE_ANIM_ONCE);
+    this->displayFace(FACE_ID_rest, FACE_ANIM_BOOMERANG);
 }
 
 void DisplaySSD1306Module::loop() {
-    // Serial.printf(F("DisplaySSD1306Module loop: faceId: %d, mode: %d, step: %d\n"), this->currentFaceId, this->currentFaceMode, this->currentFaceStep);
     const FaceEntry & entry = faceEntries[this->currentFaceId];
-    if(entry.frames == nullptr || entry.frames[0] == nullptr) {
+    ESP_LOGV(this->ThreadName, "loop: face: %s (%d), mode: %d, step: %d, max: %d", entry.name, this->currentFaceId, this->currentFaceMode, this->currentFaceStep, entry.maxFrames);
+    if(entry.maxFrames <= 0) {
         this->enabled  = false;
         this->canSleep = true;
         return;
     }
 
     bitmap_t * bitmap = entry.frames[this->currentFaceStep];
-    if(bitmap == nullptr) {
-        this->currentFaceStep = 0;
-        bitmap                = entry.frames[0];
-    }
     this->drawBitmap(bitmap);
 
     if(this->currentFaceMode == FACE_ANIM_ONCE) {
-        if(this->currentFaceStep >= entry.maxFrames - 1 || entry.frames[this->currentFaceStep + 1] == nullptr) {
-            this->faceAnimFinished = true;
-        } else {
-            this->currentFaceStep++;
-        }
+        this->currentFaceStep++;
+        this->faceAnimFinished = this->currentFaceStep >= entry.maxFrames - 1;
     } else if(this->currentFaceMode == FACE_ANIM_LOOP) {
         this->currentFaceStep = (this->currentFaceStep + 1) % entry.maxFrames;
     } else if(this->currentFaceMode == FACE_ANIM_BOOMERANG) {
-        if(faceAnimationDirectionReverse) {
-            if(this->currentFaceStep == 0) {
-                faceAnimationDirectionReverse = false;
-                this->currentFaceStep++;
-            } else {
-                this->currentFaceStep--;
+        if(this->faceAnimationDirectionReverse) {
+            this->currentFaceStep--;
+            if(this->currentFaceStep < 0) {
+                this->currentFaceStep               = 1;
+                this->faceAnimationDirectionReverse = false;
             }
         } else {
-            if(this->currentFaceStep >= entry.maxFrames - 1 || entry.frames[this->currentFaceStep + 1] == nullptr) {
-                faceAnimationDirectionReverse = true;
-                this->currentFaceStep--;
-            } else {
-                this->currentFaceStep++;
+            this->currentFaceStep++;
+            if(this->currentFaceStep >= entry.maxFrames) {
+                this->currentFaceStep               = entry.maxFrames - 2;
+                this->faceAnimationDirectionReverse = true;
             }
         }
-    }
-
-    if(entry.frames[this->currentFaceStep] == nullptr) {
-        this->currentFaceStep = 0;
     }
 
     if(this->faceAnimFinished) {
         this->enabled  = false;
         this->canSleep = true;
         this->animationFinishedCallback();
-    } else {
-        this->enabled  = true;
-        this->canSleep = false;
+        return;
     }
+
+    assert(this->currentFaceStep >= 0);
+    assert(this->currentFaceStep < entry.maxFrames);
+
+    this->enabled  = true;
+    this->canSleep = false;
 }
 
 void DisplaySSD1306Module::displayFace(FaceID faceId, FaceAnimMode mode) {
     if(faceId >= FACE_ID_MAX) {
-        faceId = FACE_ID_defualt;
+        faceId = FACE_ID_rest;
     }
     this->currentFaceId                 = faceId;
     this->currentFaceMode               = mode;
@@ -114,7 +106,19 @@ void DisplaySSD1306Module::displayFace(FaceID faceId, FaceAnimMode mode) {
 
     const FaceEntry & entry = faceEntries[this->currentFaceId];
 
-    Serial.printf(F("Displaying face: %s(%d) mode: %d interval: %lu ms\n"), entry.name, faceId, mode, interval);
+    if(entry.maxFrames <= 0) {
+        ESP_LOGW(this->ThreadName, "Face %s has no frames, cannot display.", entry.name);
+        return;
+    } else if(entry.maxFrames == 1) {
+        // If there's only one frame, treat it as a static image and don't loop
+        this->currentFaceMode = FACE_ANIM_ONCE;
+    } else if(entry.maxFrames == 2 && mode == FACE_ANIM_BOOMERANG) {
+        // there's only 2 frames, boomerang mode code not work
+        // fallback to loop mode which is effectively the same as boomerang in this case
+        this->currentFaceMode = FACE_ANIM_LOOP;
+    }
+
+    ESP_LOGI(this->ThreadName, "Displaying face: %s(%d) mode: %d interval: %lu ms", entry.name, faceId, mode, interval);
     this->setInterval(interval);
     this->enabled  = true;
     this->canSleep = false;

@@ -27,7 +27,8 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 - [ ] Display
     - [x] SSD1306 OLED display support
     - [ ] OTA progress display
-    - [ ] Support orginal Sesame faces
+    - [x] Support orginal Sesame faces
+    - [x] Play face frames
 - [x] OTA updates via PlatformIO
 - [ ] Global state management
 - [ ] event system

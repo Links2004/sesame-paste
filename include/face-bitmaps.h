@@ -17,7 +17,6 @@
     X(dance, 1)          \
     X(wave, 1)           \
     X(point, 5)          \
-    X(stand, 1)          \
     X(cute, 1)           \
     X(pushup, 1)         \
     X(freaky, 1)         \
@@ -27,7 +26,6 @@
     X(shrug, 1)          \
     X(dead, 2)           \
     X(crab, 1)           \
-    X(defualt, 1)        \
     X(idle, 1)           \
     X(idle_blink, 7)     \
     X(happy, 1)          \

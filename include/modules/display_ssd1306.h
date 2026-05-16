@@ -29,7 +29,9 @@
 
 class DisplaySSD1306Module : public Module, public FaceDisplay {
   public:
-    DisplaySSD1306Module() : Module() {};
+    DisplaySSD1306Module() : Module() {
+        ThreadName = "Display";
+    };
 
     void displayFace(FaceID faceId, FaceAnimMode mode = FACE_ANIM_LOOP) override;
     bool isAnimationFinished() override {
@@ -47,7 +49,7 @@ class DisplaySSD1306Module : public Module, public FaceDisplay {
     FaceID currentFaceId;
     FaceAnimMode currentFaceMode;
 
-    uint8_t currentFaceStep;
+    int8_t currentFaceStep;
     bool faceAnimationDirectionReverse;
     bool faceAnimFinished;
 

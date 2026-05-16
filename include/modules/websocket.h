@@ -8,7 +8,9 @@
 
 class WebSocketModule : public Module {
   public:
-    WebSocketModule() : Module() {};
+    WebSocketModule() : Module() {
+        ThreadName = "WebSocket";
+    };
     ~WebSocketModule();
 
   protected:
