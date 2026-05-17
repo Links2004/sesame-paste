@@ -18,6 +18,8 @@
 static ThreadController tControl            = ThreadController();
 static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 
+static volatile bool loopRunNowFlag = false;
+
 void setup() {
     Serial.begin(115200);
     Serial.setDebugOutput(true);
@@ -46,7 +48,8 @@ void setup() {
 
 void loop() {
     long delayTime = tControl.runOrDelay();
-    if(delayTime <= 0) {
+    if(delayTime <= 0 || loopRunNowFlag) {
+        loopRunNowFlag = false;
         return;
     }
 
@@ -63,6 +66,7 @@ void loop() {
 
 // Call from task context to wake the main loop early
 void wakeMainLoop() {
+    loopRunNowFlag = true;
     if(loopDelaySemaphore == nullptr) {
         return;
     }
@@ -71,6 +75,7 @@ void wakeMainLoop() {
 
 // Call from an ISR to wake the main loop early
 void IRAM_ATTR wakeMainLoopFromISR() {
+    loopRunNowFlag = true;
     if(loopDelaySemaphore == nullptr) {
         return;
     }

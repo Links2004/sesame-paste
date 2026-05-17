@@ -35,7 +35,7 @@ void NetworkModule::setup() {
         this->emitEvent(NETWORK_EVENT_OTA_START, &cmd);
     });
     ArduinoOTA.onEnd([this]() {
-        log_i("\nEnd");
+        log_i("OTA End");
         this->emitEvent(NETWORK_EVENT_OTA_END, nullptr);
     });
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
@@ -43,7 +43,7 @@ void NetworkModule::setup() {
         // only update on change
         if(percentage != this->lastOTAProgress) {
             this->lastOTAProgress = percentage;
-            log_d("Progress: %u%%\r", percentage);
+            log_d("Progress: %u%%", percentage);
             this->emitEvent(NETWORK_EVENT_OTA_PROGRESS, &percentage);
         }
     });
