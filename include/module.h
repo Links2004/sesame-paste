@@ -12,6 +12,8 @@ void debugPrintModules();
 extern void wakeMainLoop();
 extern void wakeMainLoopFromISR();
 
+typedef std::function<void(uint16_t event, void * data)> EventCallback;
+
 class Module : public Thread {
   public:
     Module();
@@ -23,11 +25,23 @@ class Module : public Thread {
         log_i("%s Module registered", this->ThreadName.c_str());
     };
 
+    void registerEventCallback(EventCallback callback) {
+        this->eventCallbacks.push_front(callback);
+    }
+
   protected:
     bool setupDone    = false;
     bool loopOnceFlag = false;
 
+    std::forward_list<EventCallback> eventCallbacks;
+
     ThreadController * tControl;
+
+    void emitEvent(uint16_t event, void * data) {
+        for(EventCallback & callback : eventCallbacks) {
+            callback(event, data);
+        }
+    }
 
     void run() override;
     void loopOnce();

@@ -1,8 +1,10 @@
 #include "modules/display_ssd1306.h"
 
+#ifdef ENABLE_SSD1306
+
 #include <Wire.h>
 
-#ifdef ENABLE_SSD1306
+#include "modules_list.h"
 
 void DisplaySSD1306Module::setup() {
     uint16_t errors = 0;
@@ -37,97 +39,94 @@ void DisplaySSD1306Module::setup() {
     this->display.display();
 
     log_i("Initializing SSD1306 display... done");
-    // this->displayFace(FACE_ID_idle_blink, FACE_ANIM_ONCE);
-    this->displayFace(FACE_ID_rest, FACE_ANIM_BOOMERANG);
+
+    g_faceModule.registerEventCallback([this](uint16_t event, void * data) {
+        if(event == FACE_EVENT_NEW_BITMAP) {
+            this->faceBitmap = (bitmap_t *)data;
+            this->loopOnce();
+            this->wakeLoop();
+        } else if(event == FACE_EVENT_ANIMATION_FINISHED) {
+            // You can add code here to handle when a face animation finishes if desired
+        }
+    });
+
+    g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
+        switch(event) {
+#ifdef ENABLE_OTA
+                // The normal loop is not running during OTA updates,
+                // so we have to update the display directly from the event callback.
+
+            case NETWORK_EVENT_OTA_START: {
+                int cmd     = *((int *)data);
+                String type = (cmd == U_FLASH) ? "firmware" : "filesystem";
+                this->display.clearDisplay();
+                this->display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_COLOR_SHIFT_HEIGHT, SSD1306_WHITE);
+                this->display.setTextSize(2);
+                this->display.setCursor(0, SCREEN_COLOR_SHIFT_HEIGHT + 2);
+                this->display.printf("OTA\n%s", type.c_str());
+                this->display.display();
+                break;
+            }
+            case NETWORK_EVENT_OTA_PROGRESS: {
+                uint8_t progress = *((uint8_t *)data);
+                int16_t barWidth = (SCREEN_WIDTH - 4) * progress / 100;
+                this->display.fillRect(
+                    2,
+                    2,
+                    2 + barWidth,
+                    SCREEN_COLOR_SHIFT_HEIGHT - 4,
+                    SSD1306_WHITE);
+
+                this->display.fillRect(
+                    0,
+                    SCREEN_COLOR_SHIFT_HEIGHT,
+                    SCREEN_WIDTH,
+                    SCREEN_HEIGHT - SCREEN_COLOR_SHIFT_HEIGHT,
+                    SSD1306_BLACK);
+
+                this->display.setTextSize(4);
+                {
+                    // Each char at textSize=4 is 6*4=24px wide, 8*4=32px tall
+                    char buf[8] = { 0 };
+                    snprintf(buf, sizeof(buf), "%u%%", progress);
+                    int16_t textWidth = strlen(buf) * 24;
+                    this->display.setCursor(
+                        (SCREEN_WIDTH - textWidth) / 2,
+                        SCREEN_COLOR_SHIFT_HEIGHT + ((SCREEN_HEIGHT - SCREEN_COLOR_SHIFT_HEIGHT) / 2) - 16);
+                    this->display.print(buf);
+                }
+                this->display.display();
+                break;
+            }
+            case NETWORK_EVENT_OTA_END:
+            case NETWORK_EVENT_OTA_ERROR:
+                this->display.clearDisplay();
+                this->display.setTextSize(2);
+                this->display.setCursor(0, SCREEN_COLOR_SHIFT_HEIGHT);
+                this->display.println(F("OTA Update"));
+                if(event == NETWORK_EVENT_OTA_ERROR) {
+                    this->display.println(F("Error!"));
+                } else {
+                    this->display.println(F("Complete!"));
+                }
+                this->display.display();
+                break;
+#endif
+        }
+    });
 }
 
 void DisplaySSD1306Module::loop() {
-    const FaceEntry & entry = faceEntries[this->currentFaceId];
-    log_v("loop: face: %s (%d), mode: %d, step: %d, max: %d", entry.name, this->currentFaceId, this->currentFaceMode, this->currentFaceStep, entry.maxFrames);
-    if(entry.maxFrames <= 0) {
-        this->enabled  = false;
-        this->canSleep = true;
-        return;
-    }
-
-    bitmap_t * bitmap = entry.frames[this->currentFaceStep];
-    this->drawBitmap(bitmap);
-
-    if(this->currentFaceMode == FACE_ANIM_ONCE) {
-        this->currentFaceStep++;
-        this->faceAnimFinished = this->currentFaceStep >= entry.maxFrames - 1;
-    } else if(this->currentFaceMode == FACE_ANIM_LOOP) {
-        this->currentFaceStep = (this->currentFaceStep + 1) % entry.maxFrames;
-    } else if(this->currentFaceMode == FACE_ANIM_BOOMERANG) {
-        if(this->faceAnimationDirectionReverse) {
-            this->currentFaceStep--;
-            if(this->currentFaceStep < 0) {
-                this->currentFaceStep               = 1;
-                this->faceAnimationDirectionReverse = false;
-            }
-        } else {
-            this->currentFaceStep++;
-            if(this->currentFaceStep >= entry.maxFrames) {
-                this->currentFaceStep               = entry.maxFrames - 2;
-                this->faceAnimationDirectionReverse = true;
-            }
-        }
-    }
-
-    if(this->faceAnimFinished) {
-        this->enabled  = false;
-        this->canSleep = true;
-        this->animationFinishedCallback();
-        return;
-    }
-
-    assert(this->currentFaceStep >= 0);
-    assert(this->currentFaceStep < entry.maxFrames);
-
-    this->enabled  = true;
-    this->canSleep = false;
-}
-
-void DisplaySSD1306Module::displayFace(FaceID faceId, FaceAnimMode mode) {
-    if(faceId >= FACE_ID_MAX) {
-        faceId = FACE_ID_rest;
-    }
-    this->currentFaceId                 = faceId;
-    this->currentFaceMode               = mode;
-    this->currentFaceStep               = 0;
-    this->faceAnimationDirectionReverse = false;
-    this->faceAnimFinished              = false;
-
-    // Calculate interval based on fps for the face
-    unsigned long interval = 1000;    // 1 fps
-    if(faceEntries[faceId].fps > 0) {
-        interval = 1000 / faceEntries[faceId].fps;
-    }
-
-    const FaceEntry & entry = faceEntries[this->currentFaceId];
-
-    if(entry.maxFrames <= 0) {
-        log_w("Face %s has no frames, cannot display.", entry.name);
-        return;
-    } else if(entry.maxFrames == 1) {
-        // If there's only one frame, treat it as a static image and don't loop
-        this->currentFaceMode = FACE_ANIM_ONCE;
-    } else if(entry.maxFrames == 2 && mode == FACE_ANIM_BOOMERANG) {
-        // there's only 2 frames, boomerang mode code not work
-        // fallback to loop mode which is effectively the same as boomerang in this case
-        this->currentFaceMode = FACE_ANIM_LOOP;
-    }
-
-    log_i("Displaying face: %s(%d) mode: %d interval: %lu ms", entry.name, faceId, mode, interval);
-    this->setInterval(interval);
-    this->enabled  = true;
-    this->canSleep = false;
-};
-
-void DisplaySSD1306Module::drawBitmap(bitmap_t * bitmap, uint16_t width, uint16_t height) {
-    if(bitmap == nullptr) return;
     this->display.clearDisplay();
-    this->display.drawBitmap(0, 0, bitmap, width, height, SSD1306_WHITE);
+
+    static const int16_t faceOffsetLines = SCREEN_COLOR_SHIFT_HEIGHT;
+    static const int16_t height          = SCREEN_HEIGHT - faceOffsetLines;
+
+    static const size_t faceOffsetBytes = (SCREEN_WIDTH / 8) * faceOffsetLines;
+
+    if(this->faceBitmap) {
+        this->display.drawBitmap(0, faceOffsetLines, &this->faceBitmap[faceOffsetBytes], SCREEN_WIDTH, height, SSD1306_WHITE);
+    }
     this->display.display();
 }
 

@@ -27,33 +27,19 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-class DisplaySSD1306Module : public Module, public FaceDisplay {
+class DisplaySSD1306Module : public Module {
   public:
     DisplaySSD1306Module() : Module() {
         ThreadName = "Display";
     };
 
-    void displayFace(FaceID faceId, FaceAnimMode mode = FACE_ANIM_LOOP) override;
-    bool isAnimationFinished() override {
-        return this->faceAnimFinished;
-    }
-    FaceID getCurrentFaceID() override {
-        return this->currentFaceId;
-    }
-
   protected:
     void setup() override;
     void loop() override;
-    void drawBitmap(bitmap_t * bitmap, uint16_t width = SCREEN_WIDTH, uint16_t height = SCREEN_HEIGHT);
-
-    FaceID currentFaceId;
-    FaceAnimMode currentFaceMode;
-
-    int8_t currentFaceStep;
-    bool faceAnimationDirectionReverse;
-    bool faceAnimFinished;
 
     Adafruit_SSD1306 display;
+
+    const uint8_t * faceBitmap;
 };
 
 #endif

@@ -12,6 +12,7 @@
 #include <Wire.h>
 #endif
 
+#define MODULE_INSTANCES
 #include "modules_list.h"
 
 static ThreadController tControl            = ThreadController();

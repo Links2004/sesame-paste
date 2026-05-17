@@ -42,6 +42,10 @@
 #define SCREEN_HEIGHT 64
 #endif
 
+#ifndef SCREEN_COLOR_SHIFT_HEIGHT
+#define SCREEN_COLOR_SHIFT_HEIGHT 16
+#endif
+
 #ifndef SSD1306_I2C_ADDR
 #define SSD1306_I2C_ADDR 0x3C
 #endif
@@ -54,4 +58,10 @@
 
 #ifndef USE_THREAD_NAMES
 #error "USE_THREAD_NAMES must be defined in platformio.ini build_flags"
+#endif
+
+#ifdef ENABLE_OTA
+#ifndef OTA_PASSWORD
+#warning "OTA_PASSWORD is not defined this is not secure, please define OTA_PASSWORD in user_config.h"
+#endif
 #endif

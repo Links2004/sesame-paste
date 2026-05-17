@@ -6,3 +6,6 @@
 // Useful to give the serial monitor time to connect before the device starts
 // PlatformIO / VScode does not connect fast enough for the initial logs to be seen
 // #define DELAY_STARTUP 5000
+
+// Keep in sync with platformio.user.ota.ini
+#define OTA_PASSWORD "sesameadmin"
