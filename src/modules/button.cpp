@@ -3,8 +3,10 @@
 
 #ifdef ENABLE_BUTTON
 
-static const uint8_t buttonPin[] = { BUTTON_PINS };
-#define BUTTON_COUNT (sizeof(buttonPin) / sizeof(buttonPin[0]))
+static const uint8_t buttonPin[]        = { BUTTON_PINS };
+static const bool buttonLevel[]         = { BUTTON_LEVELS };
+static const uint8_t BUTTON_COUNT       = (sizeof(buttonPin) / sizeof(buttonPin[0]));
+static const uint8_t BUTTON_LEVEL_COUNT = (sizeof(buttonLevel) / sizeof(buttonLevel[0]));
 
 static bool lastButtonState[BUTTON_COUNT]              = { false };
 static unsigned long lastButtonPressTime[BUTTON_COUNT] = { 0 };
@@ -24,6 +26,7 @@ void ButtonModule::setup() {
     this->canSleep = true;
     this->enabled  = false;
 
+    assert(BUTTON_LEVEL_COUNT == BUTTON_COUNT);
     g_buttonModuleInstance = this;
 
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
@@ -42,15 +45,15 @@ void IRAM_ATTR ButtonModule::interruptHandler() {
 void ButtonModule::loop() {
     bool anyButtonPressed = false;
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
-        bool pressed = digitalRead(buttonPin[i]) == LOW;
+        bool pressed = digitalRead(buttonPin[i]) == buttonLevel[i];
         anyButtonPressed |= pressed;
         if(pressed && !lastButtonState[i]) {
             lastButtonPressTime[i] = millis();
-            log_i("Button %d (%d) pressed!", buttonPin[i], i);
+            log_i("Button %d (Pin %d) pressed!", i, buttonPin[i]);
             this->emitEvent(BUTTON_EVENT_PRESSED, nullptr);
         } else if(!pressed && lastButtonState[i]) {
             unsigned long pressDuration = millis() - lastButtonPressTime[i];
-            log_i("Button %d (%d) released after %lu ms!", buttonPin[i], i, pressDuration);
+            log_i("Button %d (Pin %d) released after %lu ms!", i, buttonPin[i], pressDuration);
             this->emitEvent(BUTTON_EVENT_RELEASED, &pressDuration);
         }
         lastButtonState[i] = pressed;
