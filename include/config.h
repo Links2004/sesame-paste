@@ -51,3 +51,7 @@
 #endif
 
 #endif    // I2C_SDA && I2C_SCL
+
+#ifndef USE_THREAD_NAMES
+#error "USE_THREAD_NAMES must be defined in platformio.ini build_flags"
+#endif

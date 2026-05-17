@@ -43,8 +43,8 @@ void registerModules(ThreadController * tControl) {
     }
 }
 
-void debugPrintModules(Print * printer) {
+void debugPrintModules() {
     for(Module * module : Modules) {
-        printer->printf(F("Module: %s (%X), enabled: %d, canSleep: %d\n"), module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
+        ESP_LOGI("Modules", "Module: %s (%X), enabled: %d, canSleep: %d", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
     }
 }

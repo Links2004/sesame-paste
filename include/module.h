@@ -7,7 +7,7 @@
 #include <forward_list>
 
 void registerModules(ThreadController * tControl);
-void debugPrintModules(Print * printer);
+void debugPrintModules();
 
 extern void wakeMainLoop();
 extern void wakeMainLoopFromISR();

@@ -35,7 +35,7 @@ void setup() {
 
     Serial.println(F("Setting up Modules..."));
     registerModules(&tControl);
-    debugPrintModules(&Serial);
+    debugPrintModules();
     Serial.println(F("Setup complete, entering main loop..."));
 }
 

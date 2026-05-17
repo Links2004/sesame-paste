@@ -43,3 +43,18 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 - [ ] WiFi Improv configuration
 - [ ] MQTT
     - [ ] Home Assistant integration
+
+
+## PlatformIO
+
+Setup PlatformIO
+
+```bash
+uv tool install --with pip platformio
+```
+
+Upgrade PlatformIO
+
+```bash
+uv tool update platformio
+```
