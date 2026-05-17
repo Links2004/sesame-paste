@@ -2,3 +2,7 @@
 
 #define NETWORK_SSID "your_wifi_ssid"
 #define NETWORK_PASS "your_wifi_password"
+
+// Useful to give the serial monitor time to connect before the device starts
+// PlatformIO / VScode does not connect fast enough for the initial logs to be seen
+// #define DELAY_STARTUP 5000

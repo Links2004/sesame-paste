@@ -26,6 +26,10 @@ void setup() {
     }
     loopDelaySemaphore = xSemaphoreCreateBinary();
 
+#ifdef DELAY_STARTUP
+    delay(DELAY_STARTUP);
+#endif
+
     Serial.println(F("Hello, Sesame!"));
 
 #ifdef ENABLE_I2C
