@@ -3,7 +3,7 @@
 #if ENABLE_NETWORK_MODE
 
 void NetworkModule::setup() {
-    Serial.printf("Attempting to connect to network: %s\n", NETWORK_SSID);
+    log_i("Attempting to connect to network: %s", NETWORK_SSID);
     WiFi.mode(WIFI_STA);
     WiFi.setHostname(deviceHostname.c_str());
     WiFi.begin(NETWORK_SSID, NETWORK_PASS);
@@ -21,24 +21,24 @@ void NetworkModule::setup() {
 #ifdef ENABLE_OTA
     ArduinoOTA.onStart([]() {
         String type = (ArduinoOTA.getCommand() == U_FLASH) ? "sketch" : "filesystem";
-        Serial.println("Start updating " + type);
+        log_i("Start updating %s", type.c_str());
     });
-    ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
+    ArduinoOTA.onEnd([]() { log_i("\nEnd"); });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        log_d("Progress: %u%%", (progress / (total / 100)));
     });
     ArduinoOTA.onError([](ota_error_t error) {
-        Serial.printf("Error[%u]: ", error);
+        log_e("Error[%u]: ", error);
         if(error == OTA_AUTH_ERROR)
-            Serial.println("Auth Failed");
+            log_e("Auth Failed");
         else if(error == OTA_BEGIN_ERROR)
-            Serial.println("Begin Failed");
+            log_e("Begin Failed");
         else if(error == OTA_CONNECT_ERROR)
-            Serial.println("Connect Failed");
+            log_e("Connect Failed");
         else if(error == OTA_RECEIVE_ERROR)
-            Serial.println("Receive Failed");
+            log_e("Receive Failed");
         else if(error == OTA_END_ERROR)
-            Serial.println("End Failed");
+            log_e("End Failed");
     });
 
     ArduinoOTA.setHostname(deviceHostname.c_str());

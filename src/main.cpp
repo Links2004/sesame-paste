@@ -30,17 +30,17 @@ void setup() {
     delay(DELAY_STARTUP);
 #endif
 
-    Serial.println(F("Hello, Sesame!"));
+    log_i("Hello, Sesame!");
 
 #ifdef ENABLE_I2C
     Wire.begin(I2C_SDA, I2C_SCL);
     Wire.setClock(I2C_CLOCK_SPEED);
 #endif
 
-    Serial.println(F("Setting up Modules..."));
+    log_d("Setting up Modules...");
     registerModules(&tControl);
     debugPrintModules();
-    Serial.println(F("Setup complete, entering main loop..."));
+    log_i("Setup complete, entering main loop...");
 }
 
 void loop() {

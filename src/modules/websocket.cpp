@@ -12,7 +12,7 @@ void WebSocketModule::setup() {
     this->webSocket.begin();
     this->webSocket.onEvent([this](uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
         if(type == WStype_TEXT) {
-            Serial.printf("Received WebSocket message: %s\n", payload);
+            log_i("Received WebSocket message: %s", payload);
             // Echo the message back to the client
             this->webSocket.sendTXT(num, payload, length);
         }
