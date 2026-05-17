@@ -22,7 +22,6 @@ FaceEntry faceEntries[] = {
 
 void FaceModule::setup() {
     this->calculateMaxFrames();
-    // this->displayFace(FACE_ID_idle_blink, FACE_ANIM_ONCE);
     this->displayFace(FACE_ID_rest, FACE_ANIM_BOOMERANG);
 }
 

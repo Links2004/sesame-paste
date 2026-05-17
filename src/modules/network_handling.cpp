@@ -21,7 +21,6 @@ void NetworkModule::setup() {
             default:
                 break;
         }
-
         this->loopOnce();
         this->wakeLoop();
     });
@@ -76,11 +75,18 @@ void NetworkModule::setup() {
 
 void NetworkModule::loop() {
 #ifdef ENABLE_OTA
-    if(WiFi.status() == WL_CONNECTED) {
-        ArduinoOTA.handle();
-        this->loopOnceFlag = false;    // keep looping
-        this->setInterval(0);          // run every loop
+    if(WiFi.status() != WL_CONNECTED) {
+        this->enabled  = false;    // disable loop when not connected to save resources
+        this->canSleep = true;     // allow sleeping when not connected
+        return;
     }
+    ArduinoOTA.handle();
+
+    this->loopOnceFlag = false;    // keep looping
+    this->setInterval(0);          // run every loop
+#else
+    this->enabled  = false;    // disable loop when OTA is not enabled to save resources
+    this->canSleep = true;     // allow sleeping when OTA is not enabled
 #endif
 }
 
