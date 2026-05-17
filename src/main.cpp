@@ -21,13 +21,22 @@ static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 static volatile bool loopRunNowFlag = false;
 
 void setup() {
+    loopDelaySemaphore = xSemaphoreCreateBinary();
+
     Serial.begin(115200);
     Serial.setDebugOutput(true);
+#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT == 1
+    // reduce USB CDC TX timeout to prevent blocking when Serial is not connected
+    Serial.setTxBufferSize(10240);
+    Serial.setTxTimeoutMs(1);
+#endif
+
+#ifdef WAIT_FOR_SERIAL_STARTUP
     unsigned long start = millis();
-    while(!Serial && (millis() - start < 5000)) {
+    while(!Serial && (millis() - start < WAIT_FOR_SERIAL_STARTUP)) {
         delay(10);    // wait for serial port to connect. Needed for native USB
     }
-    loopDelaySemaphore = xSemaphoreCreateBinary();
+#endif
 
 #ifdef DELAY_STARTUP
     delay(DELAY_STARTUP);
