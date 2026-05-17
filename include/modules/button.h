@@ -12,6 +12,11 @@
 #error "BUTTON_DEBOUNCE_DELAY is not defined in config"
 #endif
 
+enum ButtonEvent : uint16_t {
+    BUTTON_EVENT_PRESSED,
+    BUTTON_EVENT_RELEASED
+};
+
 class ButtonModule : public Module {
   public:
     ButtonModule() : Module() {

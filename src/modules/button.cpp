@@ -47,9 +47,11 @@ void ButtonModule::loop() {
         if(pressed && !lastButtonState[i]) {
             lastButtonPressTime[i] = millis();
             log_i("Button %d (%d) pressed!", buttonPin[i], i);
+            this->emitEvent(BUTTON_EVENT_PRESSED, nullptr);
         } else if(!pressed && lastButtonState[i]) {
             unsigned long pressDuration = millis() - lastButtonPressTime[i];
             log_i("Button %d (%d) released after %lu ms!", buttonPin[i], i, pressDuration);
+            this->emitEvent(BUTTON_EVENT_RELEASED, &pressDuration);
         }
         lastButtonState[i] = pressed;
     }
