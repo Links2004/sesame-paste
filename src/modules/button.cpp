@@ -29,6 +29,7 @@ void ButtonModule::setup() {
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
         pinMode(buttonPin[i], INPUT_PULLUP);
         attachInterrupt(digitalPinToInterrupt(buttonPin[i]), buttonInterruptTrampoline, CHANGE);
+        log_i("Button %d initialized on pin %d", i, buttonPin[i]);
     }
 }
 
@@ -45,10 +46,10 @@ void ButtonModule::loop() {
         anyButtonPressed |= pressed;
         if(pressed && !lastButtonState[i]) {
             lastButtonPressTime[i] = millis();
-            ESP_LOGI(this->ThreadName, "Button %d (%d) pressed!", buttonPin[i], i);
+            log_i("Button %d (%d) pressed!", buttonPin[i], i);
         } else if(!pressed && lastButtonState[i]) {
             unsigned long pressDuration = millis() - lastButtonPressTime[i];
-            ESP_LOGI(this->ThreadName, "Button %d (%d) released after %lu ms!", buttonPin[i], i, pressDuration);
+            log_i("Button %d (%d) released after %lu ms!", buttonPin[i], i, pressDuration);
         }
         lastButtonState[i] = pressed;
     }

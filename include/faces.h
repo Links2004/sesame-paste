@@ -37,7 +37,7 @@ class FaceDisplay {
     virtual bool isAnimationFinished()                                          = 0;
     virtual FaceID getCurrentFaceID()                                           = 0;
     virtual void animationFinishedCallback() {
-        ESP_LOGI("FaceDisplay", "Face animation finished");
+        log_i("Face animation finished");
     };
 };
 

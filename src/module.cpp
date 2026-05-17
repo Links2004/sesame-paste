@@ -45,6 +45,6 @@ void registerModules(ThreadController * tControl) {
 
 void debugPrintModules() {
     for(Module * module : Modules) {
-        ESP_LOGI("Modules", "Module: %s (%X), enabled: %d, canSleep: %d", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
+        log_d("Module: %s (%X), enabled: %d, canSleep: %d", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
     }
 }

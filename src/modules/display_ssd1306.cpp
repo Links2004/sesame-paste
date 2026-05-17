@@ -7,7 +7,7 @@
 void DisplaySSD1306Module::setup() {
     uint16_t errors = 0;
 
-    ESP_LOGI(this->ThreadName.c_str(), "Initializing SSD1306 display...");
+    log_i("Initializing SSD1306 display...");
     this->display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, SSD1306_RESET_PIN);
 
     // Test and init if display exists on I2C bus.
@@ -17,15 +17,15 @@ void DisplaySSD1306Module::setup() {
             if(this->display.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDR)) {
                 break;
             } else {
-                ESP_LOGW(this->ThreadName.c_str(), "SSD1306 found but failed");
+                log_w("SSD1306 found but failed");
             }
         }
         if(errors++ > 50) {
             this->enabled = false;
-            ESP_LOGE(this->ThreadName.c_str(), "SSD1306 failed, giving up.");
+            log_e("SSD1306 failed, giving up.");
             return;
         }
-        ESP_LOGW(this->ThreadName.c_str(), "SSD1306 (0x%02X) failed, %d retrying...", SSD1306_I2C_ADDR, errors);
+        log_w("SSD1306 (0x%02X) failed, %d retrying...", SSD1306_I2C_ADDR, errors);
         delay(1000);
     }
 
@@ -36,14 +36,14 @@ void DisplaySSD1306Module::setup() {
     this->display.println(F("Booting..."));
     this->display.display();
 
-    ESP_LOGI(this->ThreadName.c_str(), "Initializing SSD1306 display... done");
+    log_i("Initializing SSD1306 display... done");
     // this->displayFace(FACE_ID_idle_blink, FACE_ANIM_ONCE);
     this->displayFace(FACE_ID_rest, FACE_ANIM_BOOMERANG);
 }
 
 void DisplaySSD1306Module::loop() {
     const FaceEntry & entry = faceEntries[this->currentFaceId];
-    ESP_LOGV(this->ThreadName.c_str(), "loop: face: %s (%d), mode: %d, step: %d, max: %d", entry.name, this->currentFaceId, this->currentFaceMode, this->currentFaceStep, entry.maxFrames);
+    log_v("loop: face: %s (%d), mode: %d, step: %d, max: %d", entry.name, this->currentFaceId, this->currentFaceMode, this->currentFaceStep, entry.maxFrames);
     if(entry.maxFrames <= 0) {
         this->enabled  = false;
         this->canSleep = true;
@@ -107,7 +107,7 @@ void DisplaySSD1306Module::displayFace(FaceID faceId, FaceAnimMode mode) {
     const FaceEntry & entry = faceEntries[this->currentFaceId];
 
     if(entry.maxFrames <= 0) {
-        ESP_LOGW(this->ThreadName.c_str(), "Face %s has no frames, cannot display.", entry.name);
+        log_w("Face %s has no frames, cannot display.", entry.name);
         return;
     } else if(entry.maxFrames == 1) {
         // If there's only one frame, treat it as a static image and don't loop
@@ -118,7 +118,7 @@ void DisplaySSD1306Module::displayFace(FaceID faceId, FaceAnimMode mode) {
         this->currentFaceMode = FACE_ANIM_LOOP;
     }
 
-    ESP_LOGI(this->ThreadName.c_str(), "Displaying face: %s(%d) mode: %d interval: %lu ms", entry.name, faceId, mode, interval);
+    log_i("Displaying face: %s(%d) mode: %d interval: %lu ms", entry.name, faceId, mode, interval);
     this->setInterval(interval);
     this->enabled  = true;
     this->canSleep = false;

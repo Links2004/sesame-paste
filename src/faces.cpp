@@ -2,8 +2,6 @@
 #include "faces.h"
 #include "esp_log.h"
 
-static const char * TAG = "faces";
-
 FaceDisplay * display = nullptr;
 
 static const uint8_t MAX_FACE_FRAMES = 6;
@@ -44,8 +42,8 @@ void initFaceEntries() {
         }
 
         if(entry.maxFrames == 0) {
-            ESP_LOGE(TAG, "Face %s (index %d) has no frames defined.", entry.name ? entry.name : "(null)", i);
+            log_e("Face %s (index %d) has no frames defined.", entry.name ? entry.name : "(null)", i);
         }
     }
-    ESP_LOGI(TAG, "Initialized %d face entries.", FACE_ID_MAX);
+    log_i("Initialized %d face entries.", FACE_ID_MAX);
 }

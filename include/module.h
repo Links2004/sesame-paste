@@ -20,6 +20,7 @@ class Module : public Thread {
     virtual void init(ThreadController * tControl) {
         this->tControl = tControl;
         tControl->add(this);
+        log_i("%s Module registered", this->ThreadName.c_str());
     };
 
   protected:
