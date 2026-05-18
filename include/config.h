@@ -32,26 +32,42 @@
 #endif
 
 // OLED Display Config
-#define ENABLE_SSD1306
+#define ENABLE_I2C_DISPLAY
 
-#ifndef SCREEN_WIDTH
-#define SCREEN_WIDTH 128
+#ifndef DISPLAY_WIDTH
+#define DISPLAY_WIDTH 128
 #endif
 
-#ifndef SCREEN_HEIGHT
-#define SCREEN_HEIGHT 64
+#ifndef DISPLAY_HEIGHT
+#define DISPLAY_HEIGHT 64
 #endif
 
-#ifndef SCREEN_COLOR_SHIFT_HEIGHT
-#define SCREEN_COLOR_SHIFT_HEIGHT 16
+#ifndef DISPLAY_COLOR_SHIFT_HEIGHT
+#define DISPLAY_COLOR_SHIFT_HEIGHT 16
 #endif
 
-#ifndef SSD1306_I2C_ADDR
-#define SSD1306_I2C_ADDR 0x3C
+#ifndef DISPLAY_I2C_ADDR
+#define DISPLAY_I2C_ADDR 0x3C
 #endif
 
-#ifndef SSD1306_RESET_PIN
-#define SSD1306_RESET_PIN -1
+#ifndef DISPLAY_RESET_PIN
+#define DISPLAY_RESET_PIN U8X8_PIN_NONE
+#endif
+
+#ifndef DISPLAY_TYPE
+#define DISPLAY_TYPE U8G2_SSD1306_128X64_NONAME_F_HW_I2C
+#endif
+
+#ifndef FONT_16
+#define FONT_16 u8g2_font_9x15B_tf
+#endif
+
+#ifndef FONT_32
+#define FONT_32 u8g2_font_logisoso20_tr
+#endif
+
+#ifndef FONT_48
+#define FONT_48 u8g2_font_logisoso32_tr
 #endif
 
 #endif    // I2C_SDA && I2C_SCL

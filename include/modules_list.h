@@ -18,9 +18,9 @@ MODULE_LOAD_PREFIX ButtonModule g_buttonModule;
 MODULE_LOAD_PREFIX WebSocketModule g_webSocketModule;
 #endif
 
-#ifdef ENABLE_SSD1306
-#include "modules/display_ssd1306.h"
-MODULE_LOAD_PREFIX DisplaySSD1306Module g_displaySSD1306Module;
+#ifdef ENABLE_I2C_DISPLAY
+#include "modules/display.h"
+MODULE_LOAD_PREFIX DisplayModule g_DisplayModule;
 #endif
 
 #ifdef ENABLE_NETWORK_MODE

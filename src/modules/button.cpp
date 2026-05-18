@@ -67,8 +67,6 @@ void ButtonModule::loop() {
 
     this->canSleep = !anyButtonPressed;    // stay awake when button is pressed
     this->enabled  = false;
-
-    debugPrintModules();
 }
 
 #endif
