@@ -25,12 +25,12 @@ void Module::run() {
     if(!setupDone) {
         this->setup();
         setupDone = true;
+        this->runned();
         return;
     }
     this->loop();
     this->runned();
     if(this->loopOnceFlag) {
-        this->setInterval(__LONG_MAX__);    // effectively disable until next wakeLoop
         this->enabled      = false;
         this->canSleep     = true;
         this->loopOnceFlag = false;
@@ -45,6 +45,7 @@ void registerModules(ThreadController * tControl) {
 
 void debugPrintModules() {
     for(Module * module : Modules) {
-        log_d("Module: %s (%X), enabled: %d, canSleep: %d", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep);
+        ;
+        log_d("Module: %s (%X) enabled: %d canSleep: %d till: %ld", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep, module->tillRun(millis()));
     }
 }

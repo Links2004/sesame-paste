@@ -29,10 +29,16 @@ void FaceModule::loop() {
     const FaceEntry & entry = faceEntries[this->currentFaceId];
     log_v("loop: face: %s (%d), mode: %d, step: %d, max: %d", entry.name, this->currentFaceId, this->currentFaceMode, this->currentFaceStep, entry.maxFrames);
     if(entry.maxFrames <= 0) {
-        this->enabled  = false;
-        this->canSleep = true;
+        this->enabled = false;
         return;
     }
+
+    // Calculate interval based on fps for the face
+    unsigned long interval = 1000;
+    if(entry.fps > 0) {
+        interval = 1000 / entry.fps;
+    }
+    this->setInterval(interval);
 
     bitmap_t * bitmap = entry.frames[this->currentFaceStep];
     this->emitEvent(FACE_EVENT_NEW_BITMAP, (void *)bitmap);
@@ -76,17 +82,15 @@ void FaceModule::displayFace(FaceID faceId, FaceAnimMode mode) {
     if(faceId >= FACE_ID_MAX) {
         faceId = FACE_ID_rest;
     }
+    if(this->currentFaceId == faceId && this->currentFaceMode == mode && !this->faceAnimFinished) {
+        return;
+    }
+
     this->currentFaceId                 = faceId;
     this->currentFaceMode               = mode;
     this->currentFaceStep               = 0;
     this->faceAnimationDirectionReverse = false;
     this->faceAnimFinished              = false;
-
-    // Calculate interval based on fps for the face
-    unsigned long interval = 1000;    // 1 fps
-    if(faceEntries[faceId].fps > 0) {
-        interval = 1000 / faceEntries[faceId].fps;
-    }
 
     const FaceEntry & entry = faceEntries[this->currentFaceId];
 
@@ -102,10 +106,12 @@ void FaceModule::displayFace(FaceID faceId, FaceAnimMode mode) {
         this->currentFaceMode = FACE_ANIM_LOOP;
     }
 
-    log_i("Displaying face: %s(%d) mode: %d interval: %lu ms", entry.name, faceId, mode, interval);
-    this->setInterval(interval);
+    log_i("Displaying face: %s(%d) mode: %d", entry.name, faceId, mode);
+
+    this->setInterval(0);
     this->enabled  = true;
     this->canSleep = false;
+    this->wakeLoop();
 };
 
 void FaceModule::calculateMaxFrames() {

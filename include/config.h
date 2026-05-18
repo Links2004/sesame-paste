@@ -65,3 +65,7 @@
 #warning "OTA_PASSWORD is not defined this is not secure, please define OTA_PASSWORD in user_config.h"
 #endif
 #endif
+
+#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+#define IS_USB_SERIAL
+#endif

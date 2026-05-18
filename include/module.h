@@ -25,7 +25,7 @@ class Module : public Thread {
         log_i("%s Module registered", this->ThreadName.c_str());
     };
 
-    void registerEventCallback(EventCallback callback) {
+    inline void registerEventCallback(EventCallback callback) {
         this->eventCallbacks.push_front(callback);
     }
 
@@ -50,11 +50,13 @@ class Module : public Thread {
         return ThreadName;
     };
 
-    void inline wakeLoop() {
+    inline void wakeLoop() {
+        log_v("wakeMainLoop %s", this->ThreadName.c_str());
         wakeMainLoop();
     }
 
-    void inline wakeLoopISR() {
+    inline void wakeLoopISR() {
+        log_v("wakeMainLoopFromISR %s", this->ThreadName.c_str());
         wakeMainLoopFromISR();
     }
 

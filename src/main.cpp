@@ -8,6 +8,10 @@
 
 #include "sesame_paste.h"
 
+#ifdef IS_USB_SERIAL
+#include <HWCDC.h>
+#endif
+
 #ifdef ENABLE_I2C
 #include <Wire.h>
 #endif
@@ -24,11 +28,12 @@ void setup() {
     loopDelaySemaphore = xSemaphoreCreateBinary();
 
     Serial.begin(115200);
-    Serial.setDebugOutput(true);
-#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT == 1
+#ifdef IS_USB_SERIAL
     // reduce USB CDC TX timeout to prevent blocking when Serial is not connected
-    Serial.setTxBufferSize(10240);
-    Serial.setTxTimeoutMs(1);
+    Serial.setTxTimeoutMs(0);
+    Serial.setDebugOutput(HWCDC::isPlugged() && HWCDC::isConnected());
+#else
+    Serial.setDebugOutput(true);
 #endif
 
 #ifdef WAIT_FOR_SERIAL_STARTUP
@@ -57,6 +62,7 @@ void setup() {
 
 void loop() {
     long delayTime = tControl.runOrDelay();
+    log_v("Main loop delay: %ld ms loopRunNowFlag: %d", delayTime, loopRunNowFlag);
     if(delayTime <= 0 || loopRunNowFlag) {
         loopRunNowFlag = false;
         return;

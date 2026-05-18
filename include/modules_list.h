@@ -30,3 +30,6 @@ MODULE_LOAD_PREFIX NetworkModule g_networkModule;
 
 #include "modules/faces.h"
 MODULE_LOAD_PREFIX FaceModule g_faceModule;
+
+#include "modules/cable_handling.h"
+MODULE_LOAD_PREFIX CableModule g_cableModule;

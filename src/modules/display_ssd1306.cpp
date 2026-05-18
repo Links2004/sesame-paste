@@ -50,6 +50,11 @@ void DisplaySSD1306Module::setup() {
         }
     });
 
+    g_cableModule.registerEventCallback([this](uint16_t event, void * data) {
+        this->loopOnce();
+        this->wakeLoop();
+    });
+
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
         switch(event) {
 #ifdef ENABLE_OTA
@@ -119,14 +124,30 @@ void DisplaySSD1306Module::setup() {
 void DisplaySSD1306Module::loop() {
     this->display.clearDisplay();
 
-    static const int16_t faceOffsetLines = SCREEN_COLOR_SHIFT_HEIGHT;
-    static const int16_t height          = SCREEN_HEIGHT - faceOffsetLines;
+    // int16_t faceOffsetLines = SCREEN_COLOR_SHIFT_HEIGHT;
+    int16_t faceOffsetLines = 0;
+    int16_t height          = SCREEN_HEIGHT - faceOffsetLines;
 
-    static const size_t faceOffsetBytes = (SCREEN_WIDTH / 8) * faceOffsetLines;
+    size_t faceOffsetBytes = (SCREEN_WIDTH / 8) * faceOffsetLines;
 
     if(this->faceBitmap) {
         this->display.drawBitmap(0, faceOffsetLines, &this->faceBitmap[faceOffsetBytes], SCREEN_WIDTH, height, SSD1306_WHITE);
     }
+
+    this->display.fillRect(
+        0,
+        0,
+        16,
+        SCREEN_COLOR_SHIFT_HEIGHT,
+        g_cableModule.isUSBConnected() ? SSD1306_WHITE : SSD1306_BLACK);
+
+    this->display.fillRect(
+        0 + 50,
+        0,
+        16,
+        SCREEN_COLOR_SHIFT_HEIGHT,
+        g_cableModule.isUSBSerialConnected() ? SSD1306_WHITE : SSD1306_BLACK);
+
     this->display.display();
 }
 
