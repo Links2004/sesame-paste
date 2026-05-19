@@ -24,22 +24,60 @@ static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 
 static volatile bool loopRunNowFlag = false;
 
-#ifdef IS_USB_SERIAL
+const char * resetReasonName(esp_reset_reason_t r) {
+    switch(r) {
+        case ESP_RST_UNKNOWN:
+            return "Unknown";
+        case ESP_RST_POWERON:
+            return "PowerOn";    // Power on or RST pin toggled
+        case ESP_RST_EXT:
+            return "ExtPin";    // External pin - not applicable for ESP32
+        case ESP_RST_SW:
+            return "Reboot";    // esp_restart()
+        case ESP_RST_PANIC:
+            return "Crash";    // Exception/panic
+        case ESP_RST_INT_WDT:
+            return "WDT_Int";    // Interrupt watchdog (software or hardware)
+        case ESP_RST_TASK_WDT:
+            return "WDT_Task";    // Task watchdog
+        case ESP_RST_WDT:
+            return "WDT_Other";    // Other watchdog
+        case ESP_RST_DEEPSLEEP:
+            return "Sleep";    // Reset after exiting deep sleep mode
+        case ESP_RST_BROWNOUT:
+            return "BrownOut";    // Brownout reset (software or hardware)
+        case ESP_RST_SDIO:
+            return "SDIO";    // Reset over SDIO
+        case ESP_RST_USB:
+            return "USB";    // Reset by USB peripheral
+        case ESP_RST_JTAG:
+            return "JTAG";    // Reset by JTAG
+        case ESP_RST_EFUSE:
+            return "eFuse";    // Reset due to eFuse error
+        case ESP_RST_PWR_GLITCH:
+            return "PwrGlitch";    // Reset due to power glitch detected
+        case ESP_RST_CPU_LOCKUP:
+            return "CPULockup";    // Reset due to CPU lock up (double exception
+        default:
+            return "";
+    }
+}
+
+#if defined(IS_USB_SERIAL) && !defined(WAIT_FOR_SERIAL_STARTUP)
 __attribute__((constructor)) void disable_early_cdc_blocking() {
     // disable USB CDC TX blocking on boot
     // this needs to be done as early as possible to prevent blocking
     // during startup before setup() is called
     Serial.setTxTimeoutMs(0);
+    Serial.setTxBufferSize(2048);
 }
 #endif
 
 void setup() {
     loopDelaySemaphore = xSemaphoreCreateBinary();
 
-    Serial.setTxBufferSize(2048);
     Serial.begin(115200);
-
-#ifdef IS_USB_SERIAL
+#if defined(IS_USB_SERIAL) && !defined(WAIT_FOR_SERIAL_STARTUP)
     Serial.setTxTimeoutMs(0);
     Serial.setDebugOutput(HWCDC::isPlugged() && HWCDC::isConnected());
 #else
@@ -58,6 +96,9 @@ void setup() {
 #endif
 
     log_i("Hello, Sesame!");
+
+    esp_reset_reason_t resetReason = esp_reset_reason();
+    log_i("Reset reason: %s (%d)", resetReasonName(resetReason), resetReason);
 
 #ifdef ENABLE_I2C
     Wire.begin(I2C_SDA, I2C_SCL);

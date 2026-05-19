@@ -142,6 +142,22 @@ void DisplayModule::loop() {
 void DisplayModule::renderIcons() {
     std::forward_list<uint16_t> icons;
 
+    // get reason for reboot
+    uint32_t resetReason = esp_reset_reason();
+    switch(resetReason) {
+        // software errors
+        case ESP_RST_PANIC:
+        case ESP_RST_WDT:
+        case ESP_RST_CPU_LOCKUP:
+            icons.push_front(ICON_CRITICAL_SW_ERROR);
+            break;
+        // power instability
+        case ESP_RST_BROWNOUT:
+        case ESP_RST_PWR_GLITCH:
+            icons.push_front(ICON_POWER_ERROR);
+            break;
+    }
+
 #ifdef ENABLE_NETWORK_MODE
     if(WiFi.status() != WL_CONNECTED) {
         icons.push_front(ICON_NO_WIFI);
