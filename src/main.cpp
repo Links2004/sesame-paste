@@ -24,12 +24,22 @@ static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 
 static volatile bool loopRunNowFlag = false;
 
+#ifdef IS_USB_SERIAL
+__attribute__((constructor)) void disable_early_cdc_blocking() {
+    // disable USB CDC TX blocking on boot
+    // this needs to be done as early as possible to prevent blocking
+    // during startup before setup() is called
+    Serial.setTxTimeoutMs(0);
+}
+#endif
+
 void setup() {
     loopDelaySemaphore = xSemaphoreCreateBinary();
 
+    Serial.setTxBufferSize(2048);
     Serial.begin(115200);
+
 #ifdef IS_USB_SERIAL
-    // reduce USB CDC TX timeout to prevent blocking when Serial is not connected
     Serial.setTxTimeoutMs(0);
     Serial.setDebugOutput(HWCDC::isPlugged() && HWCDC::isConnected());
 #else

@@ -12,7 +12,6 @@ void CableModule::hwcdc_handler(void * arg, esp_event_base_t event_base, int32_t
     switch(event_id) {
         case ARDUINO_HW_CDC_BUS_RESET_EVENT:
         case ARDUINO_HW_CDC_CONNECTED_EVENT:
-        case ARDUINO_HW_CDC_MAX_EVENT:
             this->loopOnce();
             this->wakeLoop();
             break;
