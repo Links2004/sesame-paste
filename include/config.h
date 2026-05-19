@@ -58,6 +58,10 @@
 #define DISPLAY_TYPE U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #endif
 
+#ifndef FONT_7
+#define FONT_7 u8g2_font_5x7_mf
+#endif
+
 #ifndef FONT_16
 #define FONT_16 u8g2_font_9x15B_tf
 #endif
@@ -70,8 +74,8 @@
 #define FONT_48 u8g2_font_logisoso32_tr
 #endif
 
-#ifndef FONT_ICONS_16
-#define FONT_ICONS_16 u8g2_font_siji_t_6x10
+#ifndef FONT_ICONS_12
+#define FONT_ICONS_12 u8g2_font_siji_t_6x10
 #endif
 
 #endif    // I2C_SDA && I2C_SCL
@@ -88,4 +92,20 @@
 
 #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
 #define IS_USB_SERIAL
+#endif
+
+#ifndef NTP_SERVER_1
+#define NTP_SERVER_1 "0.pool.ntp.org"
+#endif
+
+#ifndef NTP_SERVER_2
+#define NTP_SERVER_2 "1.pool.ntp.org"
+#endif
+
+#ifndef NTP_SERVER_3
+#define NTP_SERVER_3 "2.pool.ntp.org"
+#endif
+
+#ifndef NTP_TIMEZONE
+#define NTP_TIMEZONE "UTC"
 #endif

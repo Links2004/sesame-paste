@@ -59,6 +59,12 @@ void DisplayModule::setup() {
         this->wakeLoop();
     });
 
+    g_buttonModule.registerEventCallback([this](uint16_t event, void * data) {
+        this->showClock = (event == BUTTON_EVENT_PRESSED);
+        this->loopOnce();
+        this->wakeLoop();
+    });
+
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
         switch(event) {
             case NETWORK_EVENT_DISCONNECTED:
@@ -123,6 +129,8 @@ void DisplayModule::setCursorCentered(int16_t x, int16_t y, int16_t w, int16_t h
 }
 
 void DisplayModule::loop() {
+    long newInterval = __LONG_MAX__;
+
     this->display->clearBuffer();
 
     // int16_t faceOffsetLines = DISPLAY_COLOR_SHIFT_HEIGHT;
@@ -135,8 +143,38 @@ void DisplayModule::loop() {
         this->display->drawBitmap(0, faceOffsetLines, DISPLAY_WIDTH / 8, height, &this->faceBitmap[faceOffsetBytes]);
     }
 
-    this->renderIcons();
+    if(this->showIcons) {
+        this->renderIcons();
+    }
+
+    if(this->showClock) {
+        struct tm timeinfo;
+        if(getLocalTime(&timeinfo, 100)) {
+            char timeStr[6] = { 0 };    // HH:MM
+            strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+            this->display->setFont(FONT_ICONS_12);
+            const uint16_t h = this->display->getMaxCharHeight();
+            this->setCursorCentered(0, 0, DISPLAY_WIDTH, h, timeStr);
+            this->display->print(timeStr);
+        }
+        if(newInterval > 1000) {
+            newInterval = 1000;
+        }
+    }
+
     this->display->sendBuffer();
+
+    if(newInterval != __LONG_MAX__) {
+        if(this->interval != newInterval) {
+            this->setInterval(newInterval);
+        }
+        this->enabled      = true;
+        this->canSleep     = false;
+        this->loopOnceFlag = false;
+    } else {
+        this->enabled  = false;
+        this->canSleep = true;
+    }
 }
 
 void DisplayModule::renderIcons() {
@@ -188,7 +226,7 @@ void DisplayModule::renderIcons() {
 }
 
 void DisplayModule::renderIcons(std::forward_list<uint16_t> icons) {
-    this->display->setFont(FONT_ICONS_16);
+    this->display->setFont(FONT_ICONS_12);
     const uint8_t iconWidth = this->display->getMaxCharWidth();
     uint8_t x               = 0;
     for(uint16_t icon : icons) {

@@ -63,6 +63,9 @@ class DisplayModule : public Module {
 
     DISPLAY_TYPE * display;
 
+    bool showClock = false;
+    bool showIcons = true;
+
     const uint8_t * faceBitmap;
 
     void setCursorCentered(int16_t x, int16_t y, int16_t w, int16_t h, const char * text);

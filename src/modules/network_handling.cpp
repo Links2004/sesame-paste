@@ -44,6 +44,11 @@ void NetworkModule::setup() {
                 break;
             case ARDUINO_EVENT_WIFI_STA_GOT_IP:
                 log_w("Connected to WiFi network! IP: %s", WiFi.localIP().toString().c_str());
+
+#ifdef NTP_SERVER_1
+                log_d("Configuring NTP time with server: %s tz: %s", NTP_SERVER, NTP_TIMEZONE);
+                configTzTime(NTP_TIMEZONE, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3);
+#endif
                 this->emitEvent(NETWORK_EVENT_GOT_IP, nullptr);
                 break;
             default:
