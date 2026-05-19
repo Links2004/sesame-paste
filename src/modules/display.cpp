@@ -3,6 +3,7 @@
 #ifdef ENABLE_I2C_DISPLAY
 
 #include <Wire.h>
+#include <forward_list>
 
 #include "modules_list.h"
 
@@ -60,6 +61,11 @@ void DisplayModule::setup() {
 
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
         switch(event) {
+            case NETWORK_EVENT_DISCONNECTED:
+            case NETWORK_EVENT_GOT_IP:
+                this->loopOnce();
+                this->wakeLoop();
+                break;
 #ifdef ENABLE_OTA
                 // The normal loop is not running during OTA updates,
                 // so we have to update the display directly from the event callback.
@@ -129,7 +135,50 @@ void DisplayModule::loop() {
         this->display->drawBitmap(0, faceOffsetLines, DISPLAY_WIDTH / 8, height, &this->faceBitmap[faceOffsetBytes]);
     }
 
+    this->renderIcons();
     this->display->sendBuffer();
+}
+
+void DisplayModule::renderIcons() {
+    std::forward_list<uint16_t> icons;
+
+#ifdef ENABLE_NETWORK_MODE
+    if(WiFi.status() != WL_CONNECTED) {
+        icons.push_front(ICON_NO_WIFI);
+    } else {
+        // get WiFi signal strength and determine which icon to show
+        int32_t rssi = WiFi.RSSI();
+        if(rssi > -60) {
+            icons.push_front(ICON_WIFI_3);
+        } else if(rssi > -75) {
+            icons.push_front(ICON_WIFI_2);
+        } else {
+            icons.push_front(ICON_WIFI_1);
+        }
+    }
+#endif
+
+    if(g_cableModule.isUSBSerialConnected()) {
+        icons.push_front(ICON_USB_SERIAL_CONNECTED);
+    }
+
+    if(g_cableModule.isUSBConnected()) {
+        icons.push_front(ICON_USB_CONNECTED);
+    }
+
+    // TODO: Battery level indicator
+
+    this->renderIcons(icons);
+}
+
+void DisplayModule::renderIcons(std::forward_list<uint16_t> icons) {
+    this->display->setFont(FONT_ICONS_16);
+    const uint8_t iconWidth = this->display->getMaxCharWidth();
+    uint8_t x               = 0;
+    for(uint16_t icon : icons) {
+        this->display->drawGlyph(x, 0, icon);
+        x += iconWidth;
+    }
 }
 
 #endif

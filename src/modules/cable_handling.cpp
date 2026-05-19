@@ -80,6 +80,8 @@ void CableModule::loop() {
     // so we need to resort to polling to detect USB disconnection.
     this->enabled = power || serial;
     if(this->enabled) {
-        this->interval = 1000;    // check every second when connected
+        this->setInterval(1000);    // check every second when connected
+        this->loopOnceFlag = false;
+        this->enabled      = true;
     }
 }

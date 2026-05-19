@@ -70,6 +70,10 @@
 #define FONT_48 u8g2_font_logisoso32_tr
 #endif
 
+#ifndef FONT_ICONS_16
+#define FONT_ICONS_16 u8g2_font_siji_t_6x10
+#endif
+
 #endif    // I2C_SDA && I2C_SCL
 
 #ifndef USE_THREAD_NAMES

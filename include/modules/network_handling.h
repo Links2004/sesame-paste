@@ -28,6 +28,7 @@ class NetworkModule : public Module {
 
   protected:
     String deviceHostname = "sesame-robot";
+
     void setup() override;
     void loop() override;
 #ifdef ENABLE_OTA

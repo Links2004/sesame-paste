@@ -24,7 +24,29 @@
 #error "DISPLAY_HEIGHT is not defined in config"
 #endif
 
+#define ICON_USB_CONNECTED 0xE20E
+#define ICON_USB_SERIAL_CONNECTED 0xE00C
+
+// Battery 0-9 levels
+#define ICON_BATTERY_EMPTY 0xE211
+#define ICON_BATTERY_0 0xE242
+#define ICON_BATTERY_1 0xE243
+#define ICON_BATTERY_2 0xE244
+#define ICON_BATTERY_3 0xE245
+#define ICON_BATTERY_4 0xE246
+#define ICON_BATTERY_5 0xE247
+#define ICON_BATTERY_6 0xE248
+#define ICON_BATTERY_7 0xE249
+#define ICON_BATTERY_8 0xE24A
+#define ICON_BATTERY_9 0xE24B
+
+#define ICON_NO_WIFI 0xE217
+#define ICON_WIFI_1 0xE218
+#define ICON_WIFI_2 0xE219
+#define ICON_WIFI_3 0xE21A
+
 #include <U8g2lib.h>
+#include <initializer_list>
 
 class DisplayModule : public Module {
   public:
@@ -50,6 +72,9 @@ class DisplayModule : public Module {
         this->setCursorCenteredLowerColor(text);
         this->display->print(text);
     }
+
+    void renderIcons();
+    void renderIcons(std::forward_list<uint16_t> icons);
 };
 
 #endif
