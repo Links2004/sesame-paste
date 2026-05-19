@@ -1,12 +1,40 @@
 #include "modules/network_handling.h"
 
+#include "WiFiMulti.h"
+
+#include <esp_wifi.h>
+
 #if ENABLE_NETWORK_MODE
 
 void NetworkModule::setup() {
     log_i("Attempting to connect to network: %s", NETWORK_SSID);
     WiFi.mode(WIFI_STA);
+    WiFi.setMinSecurity(WIFI_AUTH_WPA3_PSK);
+    WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
     WiFi.setHostname(deviceHostname.c_str());
+
+    // Enable Advanced Wi-Fi features for better performance and reliability
+    wifi_config_t current_config;
+    esp_err_t err = esp_wifi_get_config(WIFI_IF_STA, &current_config);
+    if(err == ESP_OK) {
+        current_config.sta.bssid_set   = false;
+        current_config.sta.rm_enabled  = 1;    // Enable RRM (802.11k Radio Resource Management)
+        current_config.sta.btm_enabled = 1;    // Enable BTM (802.11v BSS Transition Management)
+        current_config.sta.mbo_enabled = 1;    // Enable MBO (802.11v Multi-AP Operation)
+        current_config.sta.ft_enabled  = 1;    // Enable FT (802.11r Fast Transition)
+        esp_wifi_set_config(WIFI_IF_STA, &current_config);
+        log_i("RRM (802.11k) and BTM (802.11v) successfully enabled!");
+    } else {
+        log_e("Failed to retrieve native Wi-Fi config.");
+    }
+
+    // Enable all Wi-Fi protocols (n/ac/ax)
+    esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11A | WIFI_PROTOCOL_11AC | WIFI_PROTOCOL_11AX);
+
+    WiFi.setSleep(WIFI_PS_MIN_MODEM);
     WiFi.begin(NETWORK_SSID, NETWORK_PASS);
+    WiFi.setAutoReconnect(true);
+    WiFi.setTxPower(WIFI_POWER_11dBm);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
         switch(event) {
