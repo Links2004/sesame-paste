@@ -46,7 +46,7 @@ void NetworkModule::setup() {
                 log_w("Connected to WiFi network! IP: %s", WiFi.localIP().toString().c_str());
 
 #ifdef NTP_SERVER_1
-                log_d("Configuring NTP time with server: %s tz: %s", NTP_SERVER, NTP_TIMEZONE);
+                log_d("Configuring NTP time with server: %s tz: %s", NTP_SERVER_1, NTP_TIMEZONE);
                 configTzTime(NTP_TIMEZONE, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3);
 #endif
                 this->emitEvent(NETWORK_EVENT_GOT_IP, nullptr);
@@ -55,8 +55,7 @@ void NetworkModule::setup() {
                 log_w("WiFi event: %s", WiFi.eventName(event));
                 break;
         }
-        this->loopOnce();
-        this->wakeLoop();
+        this->runOnce();
     });
 
 #ifdef ENABLE_OTA
@@ -104,7 +103,7 @@ void NetworkModule::setup() {
 #endif
     ArduinoOTA.begin();
 #endif    // ENABLE_OTA
-    this->loopOnce();
+    this->runOnce();
 }
 
 void NetworkModule::loop() {

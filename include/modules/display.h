@@ -24,29 +24,35 @@
 #error "DISPLAY_HEIGHT is not defined in config"
 #endif
 
-#define ICON_USB_CONNECTED 0xE20E
-#define ICON_USB_SERIAL_CONNECTED 0xE00C
+// siji icons from
+// https://raw.githubusercontent.com/wiki/olikraus/u8g2/fntpic/u8g2_font_siji_t_6x10.png
+enum icons_t : uint16_t {
+    ICON_USB_CONNECTED        = 0xE20E,
+    ICON_USB_SERIAL_CONNECTED = 0xE00C,
 
-#define ICON_POWER_ERROR 0xE20F
-#define ICON_CRITICAL_SW_ERROR 0xE077
+    ICON_POWER_ERROR       = 0xE20F,
+    ICON_CRITICAL_SW_ERROR = 0xE077,
 
-// Battery 0-9 levels
-#define ICON_BATTERY_EMPTY 0xE211
-#define ICON_BATTERY_0 0xE242
-#define ICON_BATTERY_1 0xE243
-#define ICON_BATTERY_2 0xE244
-#define ICON_BATTERY_3 0xE245
-#define ICON_BATTERY_4 0xE246
-#define ICON_BATTERY_5 0xE247
-#define ICON_BATTERY_6 0xE248
-#define ICON_BATTERY_7 0xE249
-#define ICON_BATTERY_8 0xE24A
-#define ICON_BATTERY_9 0xE24B
+    // Battery 0-9 levels
+    ICON_BATTERY_EMPTY = 0xE211,
+    ICON_BATTERY_0     = 0xE242,
+    ICON_BATTERY_1     = 0xE243,
+    ICON_BATTERY_2     = 0xE244,
+    ICON_BATTERY_3     = 0xE245,
+    ICON_BATTERY_4     = 0xE246,
+    ICON_BATTERY_5     = 0xE247,
+    ICON_BATTERY_6     = 0xE248,
+    ICON_BATTERY_7     = 0xE249,
+    ICON_BATTERY_8     = 0xE24A,
+    ICON_BATTERY_9     = 0xE24B,
 
-#define ICON_NO_WIFI 0xE217
-#define ICON_WIFI_1 0xE218
-#define ICON_WIFI_2 0xE219
-#define ICON_WIFI_3 0xE21A
+    ICON_NO_WIFI = 0xE217,
+    ICON_WIFI_1  = 0xE218,
+    ICON_WIFI_2  = 0xE219,
+    ICON_WIFI_3  = 0xE21A
+};
+
+typedef std::forward_list<icons_t> icons_list_t;
 
 #include <U8g2lib.h>
 #include <initializer_list>
@@ -79,8 +85,8 @@ class DisplayModule : public Module {
         this->display->print(text);
     }
 
-    void renderIcons();
-    void renderIcons(std::forward_list<uint16_t> icons);
+    long renderIcons();
+    void renderIcons(icons_list_t icons);
 };
 
 #endif

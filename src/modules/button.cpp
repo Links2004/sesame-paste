@@ -40,8 +40,7 @@ void ButtonModule::setup() {
 
 void IRAM_ATTR ButtonModule::interruptHandler() {
     this->enabled = true;
-    this->setInterval(BUTTON_DEBOUNCE_DELAY);    // debounce delay, adjust as needed
-    this->wakeLoopISR();                         // wake the loop to process button state
+    this->runOnceIn(BUTTON_DEBOUNCE_DELAY);    // wake the loop to process button state
 }
 
 void ButtonModule::loop() {

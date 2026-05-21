@@ -47,30 +47,26 @@ void DisplayModule::setup() {
     g_faceModule.registerEventCallback([this](uint16_t event, void * data) {
         if(event == FACE_EVENT_NEW_BITMAP) {
             this->faceBitmap = (bitmap_t *)data;
-            this->loopOnce();
-            this->wakeLoop();
+            this->runOnce();
         } else if(event == FACE_EVENT_ANIMATION_FINISHED) {
             // You can add code here to handle when a face animation finishes if desired
         }
     });
 
     g_cableModule.registerEventCallback([this](uint16_t event, void * data) {
-        this->loopOnce();
-        this->wakeLoop();
+        this->runOnce();
     });
 
     g_buttonModule.registerEventCallback([this](uint16_t event, void * data) {
         this->showClock = (event == BUTTON_EVENT_PRESSED);
-        this->loopOnce();
-        this->wakeLoop();
+        this->runOnce();
     });
 
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
         switch(event) {
             case NETWORK_EVENT_DISCONNECTED:
             case NETWORK_EVENT_GOT_IP:
-                this->loopOnce();
-                this->wakeLoop();
+                this->runOnce();
                 break;
 #ifdef ENABLE_OTA
                 // The normal loop is not running during OTA updates,
@@ -144,7 +140,10 @@ void DisplayModule::loop() {
     }
 
     if(this->showIcons) {
-        this->renderIcons();
+        long iconsInterval = this->renderIcons();
+        if(iconsInterval < newInterval) {
+            newInterval = iconsInterval;
+        }
     }
 
     if(this->showClock) {
@@ -156,6 +155,8 @@ void DisplayModule::loop() {
             const uint16_t h = this->display->getMaxCharHeight();
             this->setCursorCentered(0, 0, DISPLAY_WIDTH, h, timeStr);
             this->display->print(timeStr);
+        } else {
+            log_w("Failed to get local time");
         }
         if(newInterval > 1000) {
             newInterval = 1000;
@@ -177,8 +178,9 @@ void DisplayModule::loop() {
     }
 }
 
-void DisplayModule::renderIcons() {
-    std::forward_list<uint16_t> icons;
+long DisplayModule::renderIcons() {
+    long newInterval = __LONG_MAX__;
+    icons_list_t icons;
 
     // get reason for reboot
     uint32_t resetReason = esp_reset_reason();
@@ -209,6 +211,11 @@ void DisplayModule::renderIcons() {
         } else {
             icons.push_front(ICON_WIFI_1);
         }
+
+        // update WiFi icons at least every 5 seconds
+        if(newInterval > 5000) {
+            newInterval = 5000;
+        }
     }
 #endif
 
@@ -223,9 +230,10 @@ void DisplayModule::renderIcons() {
     // TODO: Battery level indicator
 
     this->renderIcons(icons);
+    return newInterval;
 }
 
-void DisplayModule::renderIcons(std::forward_list<uint16_t> icons) {
+void DisplayModule::renderIcons(icons_list_t icons) {
     this->display->setFont(FONT_ICONS_12);
     const uint8_t iconWidth = this->display->getMaxCharWidth();
     uint8_t x               = 0;

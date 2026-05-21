@@ -79,7 +79,10 @@ void FaceModule::loop() {
 }
 
 void FaceModule::displayFace(FaceID faceId, FaceAnimMode mode) {
-    if(faceId >= FACE_ID_MAX) {
+    if(unlikely(faceId == FACE_ID_NONE)) {
+        return;
+    }
+    if(unlikely(faceId >= FACE_ID_MAX)) {
         faceId = FACE_ID_rest;
     }
     if(this->currentFaceId == faceId && this->currentFaceMode == mode && !this->faceAnimFinished) {
@@ -107,11 +110,7 @@ void FaceModule::displayFace(FaceID faceId, FaceAnimMode mode) {
     }
 
     log_i("Displaying face: %s(%d) mode: %d", entry.name, faceId, mode);
-
-    this->setInterval(0);
-    this->enabled  = true;
-    this->canSleep = false;
-    this->wakeLoop();
+    this->runNow();
 };
 
 void FaceModule::calculateMaxFrames() {

@@ -6,9 +6,6 @@
 #include <ThreadController.h>
 #include <forward_list>
 
-void registerModules(ThreadController * tControl);
-void debugPrintModules();
-
 extern void wakeMainLoop();
 extern void wakeMainLoopFromISR();
 
@@ -29,9 +26,13 @@ class Module : public Thread {
         this->eventCallbacks.push_front(callback);
     }
 
+    static void registerModules(ThreadController * tControl);
+    static void debugPrintModules();
+
   protected:
-    bool setupDone    = false;
-    bool loopOnceFlag = false;
+    bool setupDone     = false;
+    bool postSetupDone = false;
+    bool loopOnceFlag  = false;
 
     std::forward_list<EventCallback> eventCallbacks;
 
@@ -44,7 +45,9 @@ class Module : public Thread {
     }
 
     void run() override;
-    void loopOnce();
+    void runOnce();
+    void runNow();
+    void runOnceIn(unsigned long ms);
 
     virtual String getName() {
         return ThreadName;
@@ -55,12 +58,8 @@ class Module : public Thread {
         wakeMainLoop();
     }
 
-    inline void wakeLoopISR() {
-        log_v("wakeMainLoopFromISR %s", this->ThreadName.c_str());
-        wakeMainLoopFromISR();
-    }
-
     virtual void setup() {};
+    virtual void postSetup() {};
     virtual void loop() {
         this->enabled = false;    // default to disable loop if not implemented
     };

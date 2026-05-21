@@ -106,8 +106,8 @@ void setup() {
 #endif
 
     log_d("Setting up Modules...");
-    registerModules(&tControl);
-    debugPrintModules();
+    Module::registerModules(&tControl);
+    Module::debugPrintModules();
     log_i("Setup complete, entering main loop...");
 }
 
@@ -131,22 +131,16 @@ void loop() {
 }
 
 // Call from task context to wake the main loop early
-void wakeMainLoop() {
+void IRAM_ATTR wakeMainLoop() {
     loopRunNowFlag = true;
     if(loopDelaySemaphore == nullptr) {
+        return;
+    }
+    if(unlikely(xPortInIsrContext())) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(loopDelaySemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         return;
     }
     xSemaphoreGive(loopDelaySemaphore);
-}
-
-// Call from an ISR to wake the main loop early
-void IRAM_ATTR wakeMainLoopFromISR() {
-    loopRunNowFlag = true;
-    if(loopDelaySemaphore == nullptr) {
-        return;
-    }
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(loopDelaySemaphore, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }

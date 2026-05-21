@@ -7,7 +7,8 @@ enum FaceID : uint8_t {
 #define X(name, fps) FACE_ID_##name,
     FACE_LIST
 #undef X
-        FACE_ID_MAX
+        FACE_ID_MAX,
+    FACE_ID_NONE = UINT8_MAX
 };
 
 enum FaceAnimMode : uint8_t {

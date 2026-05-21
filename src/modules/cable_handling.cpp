@@ -12,14 +12,12 @@ void CableModule::hwcdc_handler(void * arg, esp_event_base_t event_base, int32_t
     switch(event_id) {
         case ARDUINO_HW_CDC_BUS_RESET_EVENT:
         case ARDUINO_HW_CDC_CONNECTED_EVENT:
-            this->loopOnce();
-            this->wakeLoop();
+            this->runOnce();
             break;
         case ARDUINO_HW_CDC_RX_EVENT:
             if(!stateUSBconnected.get() || !stateUSBserialConnected.get()) {
                 log_i("USB event (%d)", data->rx.len);
-                this->loopOnce();
-                this->wakeLoop();
+                this->runOnce();
             }
             break;
         default:
@@ -56,7 +54,7 @@ void CableModule::setup() {
         Serial.setDebugOutput(false);
     });
 
-    this->loopOnce();
+    this->runOnce();
 }
 
 void CableModule::loop() {

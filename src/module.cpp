@@ -14,17 +14,37 @@ Module::~Module() {
     }
 };
 
-void Module::loopOnce() {
+void IRAM_ATTR Module::runOnce() {
+    this->loopOnceFlag = true;
+    this->runNow();
+}
+
+void IRAM_ATTR Module::runOnceIn(unsigned long ms) {
     this->loopOnceFlag = true;
     this->enabled      = true;
     this->canSleep     = false;
+    this->setInterval(ms);
+    this->runned();    // reset timer to count from now
+    this->wakeLoop();
+}
+
+void IRAM_ATTR Module::runNow() {
+    this->enabled  = true;
+    this->canSleep = false;
     this->setInterval(0);    // run as soon as possible
+    this->runned();          // reset timer to count from now
+    this->wakeLoop();
 }
 
 void Module::run() {
     if(!setupDone) {
         this->setup();
         setupDone = true;
+        this->runned();
+        return;
+    } else if(!postSetupDone) {
+        this->postSetup();
+        postSetupDone = true;
         this->runned();
         return;
     }
@@ -37,15 +57,14 @@ void Module::run() {
     }
 };
 
-void registerModules(ThreadController * tControl) {
+void Module::registerModules(ThreadController * tControl) {
     for(Module * module : Modules) {
         module->init(tControl);
     }
 }
 
-void debugPrintModules() {
+void Module::debugPrintModules() {
     for(Module * module : Modules) {
-        ;
         log_d("Module: %s (%X) enabled: %d canSleep: %d till: %ld", module->ThreadName.c_str(), module->ThreadID, module->enabled, module->canSleep, module->tillRun(millis()));
     }
 }
