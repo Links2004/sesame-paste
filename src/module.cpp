@@ -15,24 +15,32 @@ Module::~Module() {
 };
 
 void IRAM_ATTR Module::runOnce() {
-    this->loopOnceFlag = true;
+    if(unlikely(this->inLoop)) {
+        this->loopOnceNextFlag = true;
+    } else {
+        this->loopOnceFlag = true;
+    }
     this->runNow();
 }
 
 void IRAM_ATTR Module::runOnceIn(unsigned long ms) {
-    this->loopOnceFlag = true;
-    this->enabled      = true;
-    this->canSleep     = false;
-    this->setInterval(ms);
-    this->runned();    // reset timer to count from now
-    this->wakeLoop();
+    if(unlikely(this->inLoop)) {
+        this->loopOnceNextFlag = true;
+    } else {
+        this->loopOnceFlag = true;
+    }
+    this->runIn(ms);
 }
 
 void IRAM_ATTR Module::runNow() {
+    this->runIn(0);
+}
+
+void IRAM_ATTR Module::runIn(unsigned long ms) {
     this->enabled  = true;
     this->canSleep = false;
-    this->setInterval(0);    // run as soon as possible
-    this->runned();          // reset timer to count from now
+    this->setInterval(ms);
+    this->runned();    // reset timer to count from now
     this->wakeLoop();
 }
 
@@ -42,18 +50,20 @@ void Module::run() {
         setupDone = true;
         this->runned();
         return;
-    } else if(!postSetupDone) {
-        this->postSetup();
-        postSetupDone = true;
-        this->runned();
-        return;
     }
+    this->inLoop = true;
     this->loop();
+    this->inLoop = false;
     this->runned();
     if(this->loopOnceFlag) {
+        this->loopOnceFlag = false;
         this->enabled      = false;
         this->canSleep     = true;
-        this->loopOnceFlag = false;
+    }
+    if(this->loopOnceNextFlag) {
+        this->loopOnceNextFlag = false;
+        this->loopOnceFlag     = true;
+        this->enabled          = true;
     }
 };
 

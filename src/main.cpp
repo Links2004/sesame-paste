@@ -19,6 +19,9 @@
 #define MODULE_INSTANCES
 #include "modules_list.h"
 
+#define POSE_INSTANCES
+#include "poses_list.h"
+
 static ThreadController tControl            = ThreadController();
 static SemaphoreHandle_t loopDelaySemaphore = nullptr;
 
@@ -109,6 +112,8 @@ void setup() {
     Module::registerModules(&tControl);
     Module::debugPrintModules();
     log_i("Setup complete, entering main loop...");
+
+    debugPrintPoses();
 }
 
 void loop() {

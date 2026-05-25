@@ -33,3 +33,9 @@ MODULE_LOAD_PREFIX FaceModule g_faceModule;
 
 #include "modules/cable_handling.h"
 MODULE_LOAD_PREFIX CableModule g_cableModule;
+
+#include "modules/servo.h"
+MODULE_LOAD_PREFIX ServoModule g_servoModule;
+
+#include "modules/animation.h"
+MODULE_LOAD_PREFIX AnimationModule g_animationModule;

@@ -24,27 +24,41 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 - [x] Cooperative multitasking
 - [x] Module system for different functionalities
 - [x] Button input handling with debounce
-- [ ] Display
+- [x] Display
     - [x] SSD1306 OLED display support
     - [x] OTA progress display
     - [x] Support orginal Sesame faces
     - [x] Play face frames
-    - [ ] status icons (WiFi, MQTT, etc.)
+    - [x] status icons (WiFi, MQTT, etc.)
 - [x] OTA updates via PlatformIO
 - [ ] Global state management
-- [ ] event system
-    - [ ] Button events
+- [x] event system
+    - [x] Button events
     - [x] OTA events
-    - [ ] WiFi events
+    - [x] WiFi events
 - [ ] Remote logging
-- [ ] Servo control
+- [x] Servo control
+    - [x] Power off servos after inactivity
+    - [x] Detach PWM signal after inactivity
+
+- [ ] WiFi Improv configuration
+- [ ] APIs
+    - [ ] Websocket
+    - [ ] MQTT
+        - [ ] Home Assistant integration
 - [ ] Web UI
     - [ ] Websocket
     - [ ] Joystick control
-- [ ] WiFi Improv configuration
-- [ ] MQTT
-    - [ ] Home Assistant integration
-
+- [] Animation system
+    - [x] Define poses
+    - [x] Play poses as animations
+    - [x] Port existing Sesame Robot animations
+    - [x] Animation loop point
+    - [ ] Walking
+    - [ ] Create new poses and animations at runtime
+        - [ ] via API
+        - [ ] via Web UI
+    - [ ] Store poses and animations in non-volatile memory
 
 ## PlatformIO
 

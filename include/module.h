@@ -30,9 +30,10 @@ class Module : public Thread {
     static void debugPrintModules();
 
   protected:
-    bool setupDone     = false;
-    bool postSetupDone = false;
-    bool loopOnceFlag  = false;
+    bool setupDone        = false;
+    bool loopOnceFlag     = false;
+    bool loopOnceNextFlag = false;
+    bool inLoop           = false;
 
     std::forward_list<EventCallback> eventCallbacks;
 
@@ -46,8 +47,9 @@ class Module : public Thread {
 
     void run() override;
     void runOnce();
-    void runNow();
     void runOnceIn(unsigned long ms);
+    void runNow();
+    void runIn(unsigned long ms);
 
     virtual String getName() {
         return ThreadName;
@@ -59,7 +61,6 @@ class Module : public Thread {
     }
 
     virtual void setup() {};
-    virtual void postSetup() {};
     virtual void loop() {
         this->enabled = false;    // default to disable loop if not implemented
     };

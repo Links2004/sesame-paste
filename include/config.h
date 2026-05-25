@@ -109,3 +109,7 @@
 #ifndef NTP_TIMEZONE
 #define NTP_TIMEZONE "UTC"
 #endif
+
+#if defined(SERVO_POWER_EN_PIN) && !defined(SERVO_POWER_EN_ACTIVE)
+#define SERVO_POWER_EN_ACTIVE HIGH
+#endif

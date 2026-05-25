@@ -9,3 +9,7 @@
 
 // Keep in sync with platformio.user.ota.ini
 #define OTA_PASSWORD "sesameadmin"
+
+// Servo power control pin
+// #define SERVO_POWER_EN_PIN 9
+// #define SERVO_POWER_EN_ACTIVE HIGH
