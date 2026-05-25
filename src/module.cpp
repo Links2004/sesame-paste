@@ -55,6 +55,7 @@ void Module::run() {
     this->loop();
     this->inLoop = false;
     this->runned();
+
     if(this->loopOnceFlag) {
         this->loopOnceFlag = false;
         this->enabled      = false;
@@ -64,6 +65,7 @@ void Module::run() {
         this->loopOnceNextFlag = false;
         this->loopOnceFlag     = true;
         this->enabled          = true;
+        this->canSleep         = false;
     }
 };
 

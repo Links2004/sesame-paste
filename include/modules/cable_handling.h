@@ -28,6 +28,10 @@ class CableModule : public Module {
     void hwcdc_handler(void * arg, esp_event_base_t event_base, int32_t event_id, void * event_data);
 #endif
 
+#ifdef CABLE_CONNECTED_PIN
+    void IRAM_ATTR cable_connected_interrupt_handler();
+#endif
+
   protected:
     void setup() override;
     void loop() override;

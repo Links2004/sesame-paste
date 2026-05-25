@@ -26,10 +26,26 @@ void CableModule::hwcdc_handler(void * arg, esp_event_base_t event_base, int32_t
 }
 #endif
 
+#ifdef CABLE_CONNECTED_PIN
+void IRAM_ATTR cable_connected_helper() {
+    g_cableModule.cable_connected_interrupt_handler();
+}
+#endif
+
+void IRAM_ATTR CableModule::cable_connected_interrupt_handler() {
+    this->runOnce();
+}
+
 void CableModule::setup() {
 #ifdef IS_USB_SERIAL
     Serial.onEvent(hwcdc_handler_helper);
     log_d("Registered HWCDC event handler");
+#endif
+
+#ifdef CABLE_CONNECTED_PIN
+    pinMode(CABLE_CONNECTED_PIN, INPUT);
+    attachInterrupt(digitalPinToInterrupt(CABLE_CONNECTED_PIN), cable_connected_helper, CHANGE);
+    log_d("Initialized cable connected pin: %d", CABLE_CONNECTED_PIN);
 #endif
 
     stateUSBconnected.registerEventCallback([this](bool connected) {
@@ -62,6 +78,9 @@ void CableModule::loop() {
     bool power = false;
 #ifdef IS_USB_SERIAL
     power |= HWCDC::isPlugged();
+#endif
+#ifdef CABLE_CONNECTED_PIN
+    power |= digitalRead(CABLE_CONNECTED_PIN) == CABLE_CONNECTED_ACTIVE;
 #endif
     this->stateUSBconnected.set(power);
 

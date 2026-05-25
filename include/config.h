@@ -113,3 +113,11 @@
 #if defined(SERVO_POWER_EN_PIN) && !defined(SERVO_POWER_EN_ACTIVE)
 #define SERVO_POWER_EN_ACTIVE HIGH
 #endif
+
+#if defined(CABLE_CONNECTED_PIN) && !defined(CABLE_CONNECTED_ACTIVE)
+#define CABLE_CONNECTED_ACTIVE HIGH
+#endif
+
+#if defined(BATTERY_ADC_PIN) && !defined(ENABLE_BATTERY)
+#define ENABLE_BATTERY
+#endif
