@@ -29,7 +29,7 @@ class CableModule : public Module {
 #endif
 
 #ifdef CABLE_CONNECTED_PIN
-    void IRAM_ATTR cable_connected_interrupt_handler();
+    void cable_connected_interrupt_handler();
 #endif
 
   protected:

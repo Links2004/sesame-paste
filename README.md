@@ -36,6 +36,13 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
     - [x] Button events
     - [x] OTA events
     - [x] WiFi events
+- [x] Battery monitoring
+     - [x] Voltage reading
+     - [x] Percentage calculation
+     - [x] Display on OLED
+     - [ ] Only read battery when servos are not moving
+     - [ ] Low battery warning
+     - [ ] Power saving mode on critical battery
 - [ ] Remote logging
 - [x] Servo control
     - [x] Power off servos after inactivity

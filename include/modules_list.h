@@ -28,6 +28,11 @@ MODULE_LOAD_PREFIX DisplayModule g_DisplayModule;
 MODULE_LOAD_PREFIX NetworkModule g_networkModule;
 #endif
 
+#ifdef ENABLE_BATTERY
+#include "modules/battery.h"
+MODULE_LOAD_PREFIX BatteryModule g_batteryModule;
+#endif
+
 #include "modules/faces.h"
 MODULE_LOAD_PREFIX FaceModule g_faceModule;
 

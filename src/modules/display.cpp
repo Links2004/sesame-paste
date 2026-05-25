@@ -62,6 +62,12 @@ void DisplayModule::setup() {
         this->runOnce();
     });
 
+#ifdef ENABLE_BATTERY
+    g_batteryModule.registerEventCallback([this](uint16_t event, void * data) {
+        this->runOnce();
+    });
+#endif
+
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
         switch(event) {
             case NETWORK_EVENT_DISCONNECTED:
@@ -227,7 +233,44 @@ long DisplayModule::renderIcons() {
         icons.push_front(ICON_USB_CONNECTED);
     }
 
-    // TODO: Battery level indicator
+#ifdef ENABLE_BATTERY
+    uint8_t soc = g_batteryModule.getBatteryPercentage();
+    if(soc <= 0 || g_batteryModule.isBatteryCritical()) {
+        icons.push_front(ICON_BATTERY_EMPTY);
+#ifdef ENABLE_BIG_BATTERY_ICON
+    } else if(soc <= 10) {
+        icons.push_front(ICON_BATTERY_0);
+    } else if(soc <= 20) {
+        icons.push_front(ICON_BATTERY_1);
+    } else if(soc <= 30) {
+        icons.push_front(ICON_BATTERY_2);
+    } else if(soc <= 40) {
+        icons.push_front(ICON_BATTERY_3);
+    } else if(soc <= 50) {
+        icons.push_front(ICON_BATTERY_4);
+    } else if(soc <= 60) {
+        icons.push_front(ICON_BATTERY_5);
+    } else if(soc <= 70) {
+        icons.push_front(ICON_BATTERY_6);
+    } else if(soc <= 80) {
+        icons.push_front(ICON_BATTERY_7);
+    } else if(soc <= 90) {
+        icons.push_front(ICON_BATTERY_8);
+    } else {
+        icons.push_front(ICON_BATTERY_9);
+    }
+#else
+    } else if(soc <= 25) {
+        icons.push_front(ICON_BATTERY_0);
+    } else if(soc <= 50) {
+        icons.push_front(ICON_BATTERY_1);
+    } else if(soc <= 75) {
+        icons.push_front(ICON_BATTERY_2);
+    } else {
+        icons.push_front(ICON_BATTERY_3);
+    }
+#endif
+#endif
 
     this->renderIcons(icons);
     return newInterval;

@@ -5,8 +5,8 @@
 #include "poses_list.h"
 
 void AnimationModule::setup() {
-    // this->playPose("Stand", ANIMATION_LOOP);
-    this->playPose("Wave", 10);
+    this->playPose("Stand", ANIMATION_LOOP);
+    // this->playPose("Wave", 10);
 }
 
 bool AnimationModule::playPose(const String & name, uint16_t count) {
