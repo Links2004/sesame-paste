@@ -59,6 +59,10 @@ void ServoModule::loop() {
         return;
     }
 
+    // if no changes, detach servos to:
+    // - prevent jitter
+    // - save power
+    // - motor burnout
     if(this->stopServosNextLoop) {
         this->stopServosNextLoop = false;
         this->stopServos();
@@ -68,7 +72,7 @@ void ServoModule::loop() {
     }
 
     this->stopServosNextLoop = true;
-    this->runIn(30000);    // if no changes for 30 seconds, detach servos to prevent jitter and save power
+    this->runIn(10000);
 }
 
 void ServoModule::setServoAngle(ServoName channel, int angle) {
