@@ -7,6 +7,9 @@ void BatteryModule::setup() {
     pinMode(BATTERY_ADC_PIN, INPUT);
     analogReadMilliVolts(BATTERY_ADC_PIN);
     batteryPercentage.registerEventCallback([this](uint8_t percentage) {
+        if(!this->isBatteryConnected()) {
+            return;
+        }
         if(percentage <= BATTERY_CRITICAL_THRESHOLD) {
             log_w("Battery critical: %d%%", percentage);
             this->emitEvent(BATTERY_EVENT_CRITICAL, &percentage);
@@ -26,14 +29,22 @@ void BatteryModule::loop() {
     this->batteryVoltage = this->readBatteryVoltage();
     uint8_t percentage   = this->calcBatteryPercentage(this->batteryVoltage);
     this->batteryPercentage.set(percentage);
-    log_d("Battery: %.3fV, %ld%%", this->batteryVoltage, percentage);
+
+    if(!this->isBatteryConnected()) {
+        log_w("Battery not connected or voltage too low: %.3fV", this->batteryVoltage);
+    } else {
+        log_d("Battery: %.3fV, %ld%%", this->batteryVoltage, percentage);
+    }
 
     // update every 10 seconds
     this->runIn(10000);
 }
 
 float BatteryModule::readBatteryVoltage() {
-    uint32_t raw  = analogReadMilliVolts(BATTERY_ADC_PIN);
+    uint32_t raw  = ((
+                         analogReadMilliVolts(BATTERY_ADC_PIN) +
+                         analogReadMilliVolts(BATTERY_ADC_PIN)) /
+                     2);
     float voltage = (raw * BATTERY_VOLTAGE_DIVIDER_RATIO) / 1000.0f;
     return voltage;
 }

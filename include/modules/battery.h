@@ -27,11 +27,21 @@ class BatteryModule : public Module {
     }
 
     bool isBatteryCritical() {
+        if(!this->isBatteryConnected()) {
+            return false;
+        }
         return this->batteryPercentage.get() <= BATTERY_CRITICAL_THRESHOLD;
     }
 
     bool isBatteryLow() {
+        if(!this->isBatteryConnected()) {
+            return false;
+        }
         return this->batteryPercentage.get() <= BATTERY_LOW_THRESHOLD;
+    }
+
+    bool isBatteryConnected() {
+        return this->batteryVoltage > BATTERY_NOT_CONNECTED_THRESHOLD;
     }
 
   protected:
