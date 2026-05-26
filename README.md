@@ -50,7 +50,10 @@ This project uses PlatformIO as the build system, and is based on the Arduino fr
 
 - [ ] WiFi Improv configuration
 - [ ] APIs
-    - [ ] Websocket
+    - [ ] JSON-RPC
+        - [ ] over Websocket
+        - [ ] over HTTP
+        - [ ] over Serial
     - [ ] MQTT
         - [ ] Home Assistant integration
 - [ ] Web UI

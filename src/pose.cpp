@@ -15,7 +15,7 @@ const Pose_t poseEntries[] = {
 Pose_t * findPoseByName(const String & name) {
     for(uint8_t i = 0; i < POSE_ID_MAX; i++) {
         const Pose_t & p = poseEntries[i];
-        if(name == p.name) {
+        if(name.equalsIgnoreCase(p.name)) {
             return const_cast<Pose_t *>(&p);
         }
     }

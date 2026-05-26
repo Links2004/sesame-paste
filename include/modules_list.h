@@ -13,11 +13,6 @@
 MODULE_LOAD_PREFIX ButtonModule g_buttonModule;
 #endif
 
-#ifdef ENABLE_WEBSOCKETS
-#include "modules/websocket.h"
-MODULE_LOAD_PREFIX WebSocketModule g_webSocketModule;
-#endif
-
 #ifdef ENABLE_I2C_DISPLAY
 #include "modules/display.h"
 MODULE_LOAD_PREFIX DisplayModule g_DisplayModule;
@@ -26,6 +21,11 @@ MODULE_LOAD_PREFIX DisplayModule g_DisplayModule;
 #ifdef ENABLE_NETWORK_MODE
 #include "modules/network_handling.h"
 MODULE_LOAD_PREFIX NetworkModule g_networkModule;
+#endif
+
+#ifdef ENABLE_WEBSERVER
+#include "modules/webserver.h"
+MODULE_LOAD_PREFIX WebServerModule g_webServerModule;
 #endif
 
 #ifdef ENABLE_BATTERY

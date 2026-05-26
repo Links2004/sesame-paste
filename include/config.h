@@ -13,7 +13,7 @@
 #warning "user_config.h not found"
 #endif
 
-// #define ENABLE_WEBSOCKETS
+#define ENABLE_WEBSERVER
 
 #if defined(BUTTON_PINS)
 #define ENABLE_BUTTON

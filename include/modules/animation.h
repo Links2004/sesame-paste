@@ -18,6 +18,8 @@ class AnimationModule : public Module {
     };
 
     bool playPose(const String & name, uint16_t count = ANIMATION_LOOP);
+    bool playPose(PoseID id, uint16_t count = ANIMATION_LOOP);
+    bool playPose(Pose_t * pose, uint16_t count = ANIMATION_LOOP);
 
   protected:
     void setup() override;

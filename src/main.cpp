@@ -114,6 +114,7 @@ void setup() {
     log_i("Setup complete, entering main loop...");
 
     debugPrintPoses();
+    debugPrintJsonRpcMethods();
 }
 
 void loop() {

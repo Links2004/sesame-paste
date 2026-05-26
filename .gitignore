@@ -5,4 +5,6 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 include/user_config.h
+include/webui.h
+src/webui.cpp
 platformio.user.*.ini

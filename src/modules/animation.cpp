@@ -5,27 +5,65 @@
 #include "poses_list.h"
 
 void AnimationModule::setup() {
-    this->playPose("Stand", ANIMATION_LOOP);
+    this->playPose(POSE_ID_stand, ANIMATION_LOOP);
     // this->playPose("Wave", 10);
+
+    registerJsonRpcMethod("pose", [](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        if(!params["name"].is<const char *>()) {
+            response["error"] = "Invalid params: missing name";
+            return 400;
+        }
+        const char * name = params["name"];
+        uint16_t count    = ANIMATION_LOOP;
+        if(params["count"].is<uint16_t>()) {
+            count = params["count"];
+        }
+        Pose_t * pose = findPoseByName(name);
+        if(pose == nullptr) {
+            response["error"] = "Pose not found";
+            return 404;
+        }
+        if(!g_animationModule.playPose(pose, count)) {
+            response["error"] = "Failed to play animation";
+            return 500;
+        }
+        response["result"] = "Animation started successfully";
+        return 200;
+    });
 }
 
 bool AnimationModule::playPose(const String & name, uint16_t count) {
-    log_e("Playing pose: %s, count: %d", name.c_str(), count);
     Pose_t * pose = findPoseByName(name);
     if(pose == nullptr) {
         log_e("Pose not found: %s", name.c_str());
         return false;
     }
+    return playPose(pose, count);
+}
+
+bool AnimationModule::playPose(PoseID id, uint16_t count) {
+    if(id >= POSE_ID_MAX) {
+        return false;
+    }
+    Pose_t * pose = const_cast<Pose_t *>(&poseEntries[id]);
+    return playPose(pose, count);
+}
+
+bool AnimationModule::playPose(Pose_t * pose, uint16_t count) {
+    if(pose == nullptr) {
+        return false;
+    }
+    log_v("Playing pose: %s, count: %d", pose->name, count);
     if(pose->count == 0) {
-        log_e("Pose has no steps: %s", name.c_str());
+        log_e("Pose has no steps: %s", pose->name);
         return false;
     }
     if(pose->count == 1 && count > 1) {
-        log_w("Pose %s has only one step, switching to ANIMATION_ONCE mode", name.c_str());
+        log_w("Pose %s has only one step, switching to ANIMATION_ONCE mode", pose->name);
         count = ANIMATION_ONCE;
     }
 
-    log_i("Playing pose: %s, count: %d", name.c_str(), count);
+    log_i("Playing pose: %s, count: %d", pose->name, count);
     this->currentPose           = pose;
     this->currentAnimationCount = count;
     this->currentAnimationStep  = 0;
