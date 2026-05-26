@@ -12,10 +12,10 @@
 
 #define POSES_LIST                                                                                                                         \
     X(rest, 0, {                                                                                                                           \
-                   { .angle = ANGLE_REST },                                                                                                \
+                   { .angle = ANGLE_REST, .face = FACE_ID_rest, .face_mode = FACE_ANIM_BOOMERANG },                                        \
                })                                                                                                                          \
     X(stand, 0, {                                                                                                                          \
-                    { .angle = ANGLE_STAND },                                                                                              \
+                    { .angle = ANGLE_STAND, .face = FACE_ID_happy, .face_mode = FACE_ANIM_LOOP },                                          \
                 })                                                                                                                         \
     X(wave, 2, {                                                                                                                           \
                    { .angle = ANGLE_STAND, .face = FACE_ID_wave, .face_mode = FACE_ANIM_ONCE, .duration = 200 },                           \

@@ -8,7 +8,8 @@
 #define ANIMATION_LOOP UINT16_MAX
 
 enum AnimationEvent : uint16_t {
-    ANIMATION_EVENT_FINISHED
+    ANIMATION_EVENT_FINISHED,
+    ANIMATION_EVENT_EMERGENCY_STOP,
 };
 
 class AnimationModule : public Module {

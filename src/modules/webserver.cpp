@@ -14,8 +14,6 @@ void WebServerModule::setup() {
     server.addHandler(&ws);
 
     server.on("/api/jsonrpc", HTTP_POST, [](AsyncWebServerRequest * request, JsonVariant & json) {
-        serializeJson(json, Serial);
-        Serial.println();
         AsyncJsonResponse * response = new AsyncJsonResponse();
         JsonObject root              = response->getRoot().to<JsonObject>();
         uint16_t status              = handleJsonRpcRequest(json, root);

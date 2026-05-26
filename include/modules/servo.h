@@ -38,6 +38,15 @@ enum PoseName : uint8_t {
 
 #define SERVO_NO_CHANGE __INT_MAX__
 
+enum servo_shutdown_steps_t : uint8_t {
+    SERVO_SHUTDOWN_NONE = 0,
+    SERVO_SHUTDOWN_DETACH,
+#ifdef SERVO_POWER_EN_PIN
+    SERVO_SHUTDOWN_POWER_OFF,
+#endif
+    SERVO_SHUTDOWN_DONE
+};
+
 class ServoModule : public Module {
   public:
     ServoModule() : Module() {
@@ -60,13 +69,13 @@ class ServoModule : public Module {
   protected:
     void setup() override;
     void loop() override;
-
-    void stopServos();
+    void detach();
 
     Servo servos[SERVO_MAX];
     int8_t servoSubtrim[SERVO_MAX] = { 0 };
 
-    bool stopServosNextLoop  = false;
+    servo_shutdown_steps_t servosShutdownSteps = SERVO_SHUTDOWN_NONE;
+
     unsigned long writeDelay = 20;
     int anglesNeeds[SERVO_MAX];
     int anglesCurrent[SERVO_MAX];

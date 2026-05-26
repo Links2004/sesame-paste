@@ -30,6 +30,29 @@ void AnimationModule::setup() {
         response["result"] = "Animation started successfully";
         return 200;
     });
+
+    registerJsonRpcMethod("emergencyStop", [this](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        this->emitEvent(ANIMATION_EVENT_EMERGENCY_STOP, nullptr);
+        return 200;
+    });
+
+    registerJsonRpcMethod("stop", [this](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        this->currentAnimationCount = 1;    // will stop after current loop
+        return 200;
+    });
+
+    this->registerEventCallback([this](uint16_t event, void * data) {
+        switch(event) {
+            case ANIMATION_EVENT_EMERGENCY_STOP:
+                log_e("Animation emergency stop triggered!");
+                this->animationPlaying = false;
+                this->runNow();
+                break;
+            case ANIMATION_EVENT_FINISHED:
+                log_i("Animation finished");
+                break;
+        }
+    });
 }
 
 bool AnimationModule::playPose(const String & name, uint16_t count) {

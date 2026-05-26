@@ -33,46 +33,64 @@ void ServoModule::setup() {
         servo->attach(servoPin[i], SERVO_PULSE_MIN, SERVO_PULSE_MAX);
     }
 
+    g_animationModule.registerEventCallback([this](uint16_t event, void * data) {
+        if(event == ANIMATION_EVENT_EMERGENCY_STOP) {
+            log_e("Emergency stop activated! Stopping all servos immediately.");
+            this->detach();
+            this->runOnceIn(SERVO_SHUTDOWN_POWEROFF_TIMEOUT_MS);
+        }
+    });
+
     this->enabled = false;
 }
 
 void ServoModule::loop() {
-    for(uint8_t i = 0; i < SERVO_COUNT; i++) {
-        if(anglesNeeds[i] == SERVO_NO_CHANGE || anglesNeeds[i] == anglesCurrent[i]) {
-            continue;
-        }
-
-        Servo * servo = &this->servos[i];
-
-#ifdef SERVO_POWER_EN_PIN
-        digitalWrite(SERVO_POWER_EN_PIN, SERVO_POWER_EN_ACTIVE);
-#endif
-
-        if(!servo->attached()) {
-            log_d("attaching servo %d to pin %d", i, servoPin[i]);
-            servo->attach(servoPin[i], SERVO_PULSE_MIN, SERVO_PULSE_MAX);
-        }
-        log_e("writing angle %d to servo %d (%s)", anglesNeeds[i], i, ServoNames[i].c_str());
-        servo->write(anglesNeeds[i]);
-        this->anglesCurrent[i] = anglesNeeds[i];
-        this->runIn(this->writeDelay);
-        return;
-    }
-
     // if no changes, detach servos to:
     // - prevent jitter
     // - save power
     // - motor burnout
-    if(this->stopServosNextLoop) {
-        this->stopServosNextLoop = false;
-        this->stopServos();
-        this->enabled  = false;
-        this->canSleep = true;
-        return;
-    }
+    switch(this->servosShutdownSteps) {
+        default:
+        case SERVO_SHUTDOWN_NONE:
+            for(uint8_t i = 0; i < SERVO_COUNT; i++) {
+                if(anglesNeeds[i] == SERVO_NO_CHANGE || anglesNeeds[i] == anglesCurrent[i]) {
+                    continue;
+                }
 
-    this->stopServosNextLoop = true;
-    this->runIn(10000);
+                Servo * servo = &this->servos[i];
+
+#ifdef SERVO_POWER_EN_PIN
+                digitalWrite(SERVO_POWER_EN_PIN, SERVO_POWER_EN_ACTIVE);
+#endif
+
+                if(!servo->attached()) {
+                    log_d("attaching servo %d to pin %d", i, servoPin[i]);
+                    servo->attach(servoPin[i], SERVO_PULSE_MIN, SERVO_PULSE_MAX);
+                }
+                log_e("writing angle %d to servo %d (%s)", anglesNeeds[i], i, ServoNames[i].c_str());
+                servo->write(anglesNeeds[i]);
+                this->anglesCurrent[i] = anglesNeeds[i];
+                this->runOnceIn(this->writeDelay);
+                this->servosShutdownSteps = SERVO_SHUTDOWN_NONE;
+                return;
+            }
+            this->runOnceIn(SERVO_SHUTDOWN_TIMEOUT_MS);
+            break;
+        case SERVO_SHUTDOWN_DETACH:
+            this->detach();
+            this->runOnceIn(SERVO_SHUTDOWN_POWEROFF_TIMEOUT_MS);
+            break;
+#ifdef SERVO_POWER_EN_PIN
+        case SERVO_SHUTDOWN_POWER_OFF:
+            log_d("poweroff servos");
+            digitalWrite(SERVO_POWER_EN_PIN, !SERVO_POWER_EN_ACTIVE);
+#endif
+        case SERVO_SHUTDOWN_DONE:
+            this->enabled  = false;
+            this->canSleep = true;
+            return;
+    }
+    this->servosShutdownSteps = (servo_shutdown_steps_t)(this->servosShutdownSteps + 1);
 }
 
 void ServoModule::setServoAngle(ServoName channel, int angle) {
@@ -80,18 +98,18 @@ void ServoModule::setServoAngle(ServoName channel, int angle) {
         this->anglesNeeds[channel] = SERVO_NO_CHANGE;
         return;
     }
-    anglesNeeds[channel]     = constrain(angle + this->servoSubtrim[channel], 0, 180);
-    this->stopServosNextLoop = false;
+    anglesNeeds[channel]      = constrain(angle + this->servoSubtrim[channel], 0, 180);
+    this->servosShutdownSteps = SERVO_SHUTDOWN_NONE;
     this->runNow();
 }
 
-void ServoModule::stopServos() {
+void ServoModule::detach() {
     log_d("detaching servos");
+    this->servosShutdownSteps = SERVO_SHUTDOWN_DETACH;
     for(uint8_t i = 0; i < SERVO_COUNT; i++) {
+        this->anglesNeeds[i]   = SERVO_NO_CHANGE;
+        this->anglesCurrent[i] = SERVO_NO_CHANGE;
         this->servos[i].detach();
+        pinMode(servoPin[i], INPUT);
     }
-#ifdef SERVO_POWER_EN_PIN
-    log_d("poweroff servos");
-    digitalWrite(SERVO_POWER_EN_PIN, !SERVO_POWER_EN_ACTIVE);
-#endif
 }
