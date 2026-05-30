@@ -2,6 +2,8 @@
 
 #ifdef ENABLE_WEBSERVER
 
+#include <ESPAsyncWebServer.h>
+
 #include "webui.h"
 #include "modules_list.h"
 #include "jsonrpc.h"
@@ -14,12 +16,45 @@ void WebServerModule::setup() {
     registerWebUiFiles(*this);
     server.addHandler(&ws);
 
+    server.on("/img/faces/*.raw", HTTP_GET, [](AsyncWebServerRequest * request) {
+        String name      = request->url().substring(11, request->url().length() - 4);
+        FaceEntry * face = g_faceModule.getFaceByName(name.c_str());
+        if(face == nullptr || face->frames[0] == nullptr) {
+            request->send(404, "text/plain", "Face not found");
+            return;
+        }
+
+        AsyncWebServerResponse * response = request->beginChunkedResponse(
+            "application/octet-stream",
+            [face](uint8_t * buffer, size_t maxLen, size_t index) -> size_t {
+                size_t frameCounter = index / FACE_BYTES;
+                size_t offset       = index - (FACE_BYTES * frameCounter);
+                bitmap_t * bitmap   = face->frames[frameCounter];
+                if(frameCounter >= face->maxFrames || bitmap == nullptr) {
+                    return 0;
+                }
+                size_t left = FACE_BYTES - offset;
+                memcpy(buffer, bitmap + offset, left);
+                frameCounter++;
+                return left;
+            });
+
+        // AsyncWebServerResponse * response = request->beginResponse(200, "application/octet-stream", bitmap, FACE_BYTES);
+        response->addHeader("X-Face-Name", face->name);
+        response->addHeader("X-Face-Frames", String(face->maxFrames));
+        response->addHeader("X-Face-FPS", String(face->fps));
+        response->addHeader("X-Face-Width", String(FACE_SIZE_WIDTH));
+        response->addHeader("X-Face-Height", String(FACE_SIZE_HEIGHT));
+        request->send(response);
+    });
+
     server.on("/api/jsonrpc", HTTP_POST, [](AsyncWebServerRequest * request, JsonVariant & json) {
         AsyncJsonResponse * response = new AsyncJsonResponse();
         JsonObject root              = response->getRoot().to<JsonObject>();
         uint16_t status              = handleJsonRpcRequest(json, root);
         response->setCode(status);
         response->setLength();
+        response->setContentType("application/json-rpc");
         request->send(response);
     });
 

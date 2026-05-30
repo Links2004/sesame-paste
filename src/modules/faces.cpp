@@ -23,6 +23,19 @@ FaceEntry faceEntries[] = {
 void FaceModule::setup() {
     this->calculateMaxFrames();
     this->displayFace(FACE_ID_rest, FACE_ANIM_BOOMERANG);
+
+    registerJsonRpcMethod("getFaces", [](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        JsonArray faces = response["result"].to<JsonArray>();
+        for(uint8_t i = 0; i < FACE_ID_MAX; i++) {
+            FaceEntry & entry   = faceEntries[i];
+            JsonObject faceJson = faces.add<JsonObject>();
+            faceJson["id"]      = i;
+            faceJson["name"]    = entry.name;
+            faceJson["frames"]  = entry.maxFrames;
+            faceJson["fps"]     = entry.fps;
+        }
+        return 200;
+    });
 }
 
 void FaceModule::loop() {
@@ -135,4 +148,13 @@ void FaceModule::calculateMaxFrames() {
         }
     }
     log_i("Initialized %d face entries.", FACE_ID_MAX);
+}
+
+FaceEntry * FaceModule::getFaceByName(const char * name) {
+    for(uint8_t i = 0; i < FACE_ID_MAX; i++) {
+        if(strcmp(faceEntries[i].name, name) == 0) {
+            return &faceEntries[i];
+        }
+    }
+    return nullptr;
 }

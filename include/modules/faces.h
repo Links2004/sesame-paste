@@ -2,6 +2,16 @@
 #include "sesame_paste.h"
 #include "face-bitmaps.h"
 
+#ifndef FACE_SIZE_WIDTH
+#define FACE_SIZE_WIDTH 128
+#endif
+
+#ifndef FACE_SIZE_HEIGHT
+#define FACE_SIZE_HEIGHT 64
+#endif
+
+#define FACE_BYTES (size_t)((FACE_SIZE_WIDTH * FACE_SIZE_HEIGHT) / 8)
+
 // enum for face names
 enum FaceID : uint8_t {
 #define X(name, fps) FACE_ID_##name,
@@ -44,6 +54,8 @@ class FaceModule : public Module {
     FaceID getCurrentFaceID() {
         return this->currentFaceId;
     }
+
+    FaceEntry * getFaceByName(const char * name);
 
   protected:
     void setup() override;

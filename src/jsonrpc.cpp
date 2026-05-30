@@ -27,7 +27,9 @@ void sendJsonRpcEvent(const char * event, const JsonVariant & params) {
     JsonObject root = json.to<JsonObject>();
     root["jsonrpc"] = "2.0";
     root["method"]  = e;
-    root["params"]  = params;
+    if(!params.isNull()) {
+        root["params"] = params;
+    }
 
     for(const auto & sender : eventSenders) {
         sender(json);
