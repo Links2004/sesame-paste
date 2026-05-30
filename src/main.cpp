@@ -111,10 +111,17 @@ void setup() {
     log_d("Setting up Modules...");
     Module::registerModules(&tControl);
     Module::debugPrintModules();
-    log_i("Setup complete, entering main loop...");
+
+    log_d("Registering JSON-RPC methods...");
+    registerJsonRpcMethod("ping", [](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        response["result"] = "pong";
+        return 200;
+    });
 
     debugPrintPoses();
     debugPrintJsonRpcMethods();
+
+    log_i("Setup complete, entering main loop...");
 }
 
 void loop() {

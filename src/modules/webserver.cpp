@@ -7,7 +7,8 @@
 #include "jsonrpc.h"
 
 static AsyncWebServer server(80);
-static AsyncWebSocket ws("/ws");
+static AsyncWebSocketMessageHandler wsHandler;
+static AsyncWebSocket ws("/ws", wsHandler.eventHandler());
 
 void WebServerModule::setup() {
     registerWebUiFiles(*this);
@@ -22,6 +23,44 @@ void WebServerModule::setup() {
         request->send(response);
     });
 
+    wsHandler.onConnect([this](AsyncWebSocket * server, AsyncWebSocketClient * client) {
+        log_i("Client %" PRIu32 " connected\n", client->id());
+        this->runIn(10000);
+    });
+
+    wsHandler.onDisconnect([](AsyncWebSocket * server, uint32_t clientId) {
+        log_i("Client %" PRIu32 " disconnected\n", clientId);
+    });
+
+    wsHandler.onError([](AsyncWebSocket * server, AsyncWebSocketClient * client, uint16_t errorCode, const char * reason, size_t len) {
+        log_e("Client %" PRIu32 " error: %" PRIu16 ": %s\n", client->id(), errorCode, reason);
+    });
+
+    wsHandler.onMessage([](AsyncWebSocket * server, AsyncWebSocketClient * client, const uint8_t * data, size_t len) {
+        JsonDocument json;
+        DeserializationError error = deserializeJson(json, data);
+        if(error) {
+            log_e("Failed to parse JSON: %s\n", error.c_str());
+            log_e("data(%d): %.*s\n", len, (int)len, data);
+            json.clear();
+            return;
+        }
+        // create response
+        JsonDocument response;
+        JsonObject root = response.add<JsonObject>();
+        uint16_t status = handleJsonRpcRequest(json, root);
+
+        // send response
+        size_t respSize    = measureJson(root);
+        uint8_t * respData = new uint8_t[respSize];
+        assert(respData != nullptr);
+
+        serializeJson(root, respData, respSize);
+        client->text((const char *)respData, respSize);
+        response.clear();
+        delete[] respData;
+    });
+
     // start server when network is ready
     // starting server with out network will result in a crash
     g_networkModule.registerEventCallback([this](uint16_t event, void * data) {
@@ -32,8 +71,12 @@ void WebServerModule::setup() {
 }
 
 void WebServerModule::loop() {
-    this->enabled  = false;
-    this->canSleep = true;
+    if(ws.count() == 0) {
+        this->enabled  = false;
+        this->canSleep = true;
+    }
+    ws.pingAll();
+    this->runIn(10000);
 }
 
 void WebServerModule::registerStaticUiFiles(const char * uri, const uint8_t * data, const size_t size, const char * contentType, const char * hash) {
