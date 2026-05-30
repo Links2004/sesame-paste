@@ -6,6 +6,19 @@ void BatteryModule::setup() {
     analogReadResolution(12);
     pinMode(BATTERY_ADC_PIN, INPUT);
     analogReadMilliVolts(BATTERY_ADC_PIN);
+
+    batteryPercentage.registerEventCallback([this](uint8_t percentage) {
+        JsonDocument json;
+        JsonObject root   = json.to<JsonObject>();
+        bool connected    = this->isBatteryConnected();
+        root["connected"] = connected;
+        if(connected) {
+            root["voltage"]    = this->batteryVoltage;
+            root["percentage"] = percentage;
+        }
+        sendJsonRpcEvent("battery", root);
+    });
+
     batteryPercentage.registerEventCallback([this](uint8_t percentage) {
         if(!this->isBatteryConnected()) {
             return;
@@ -20,6 +33,12 @@ void BatteryModule::setup() {
             log_v("Battery updated: %d%%", percentage);
             this->emitEvent(BATTERY_EVENT_LEVEL_CHANGED, &percentage);
         }
+    });
+
+    registerJsonRpcMethod("getBattery", [this](const JsonVariant & params, JsonObject & response) -> uint16_t {
+        response["voltage"]    = this->batteryVoltage;
+        response["percentage"] = this->batteryPercentage.get();
+        return 200;
     });
 
     this->runNow();

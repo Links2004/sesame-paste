@@ -70,6 +70,16 @@ void CableModule::setup() {
         Serial.setDebugOutput(false);
     });
 
+#ifdef SERIAL_JSON_RPC
+    registerJsonRpcEventSender([this](const JsonDocument & doc) {
+        if(!stateUSBserialConnected.get()) {
+            return;
+        }
+        serializeJson(doc, Serial);
+        Serial.println();
+    });
+#endif
+
     this->runOnce();
 }
 

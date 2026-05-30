@@ -17,6 +17,12 @@ enum ButtonEvent : uint16_t {
     BUTTON_EVENT_RELEASED
 };
 
+typedef struct {
+    bool pressed;
+    uint8_t buttonIndex;
+    unsigned long pressDuration;
+} ButtonEventData_t;
+
 class ButtonModule : public Module {
   public:
     ButtonModule() : Module() {

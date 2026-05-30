@@ -6,6 +6,34 @@ struct CStrCmp {
     bool operator()(const char * a, const char * b) const { return std::strcmp(a, b) < 0; }
 };
 static std::map<char *, jsonrpc_call_t, CStrCmp> methodMap;
+static std::forward_list<jsonrpc_event_send_t> eventSenders;
+
+void registerJsonRpcEventSender(jsonrpc_event_send_t sender) {
+    eventSenders.push_front(sender);
+}
+
+void sendJsonRpcEvent(const char * event) {
+    sendJsonRpcEvent(event, JsonVariant());
+}
+
+void sendJsonRpcEvent(const char * event, const JsonVariant & params) {
+    if(eventSenders.empty()) {
+        return;
+    }
+    String e = "event.";
+    e += event;
+
+    JsonDocument json;
+    JsonObject root = json.to<JsonObject>();
+    root["jsonrpc"] = "2.0";
+    root["method"]  = e;
+    root["params"]  = params;
+
+    for(const auto & sender : eventSenders) {
+        sender(json);
+    }
+    json.clear();
+}
 
 void registerJsonRpcMethod(const char * method, jsonrpc_call_t callback) {
     methodMap[const_cast<char *>(method)] = callback;

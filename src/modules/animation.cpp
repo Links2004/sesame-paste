@@ -50,6 +50,7 @@ void AnimationModule::setup() {
                 break;
             case ANIMATION_EVENT_FINISHED:
                 log_i("Animation finished");
+                sendJsonRpcEvent("animation.finished");
                 break;
         }
     });

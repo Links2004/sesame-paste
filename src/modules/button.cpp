@@ -13,15 +13,9 @@ static const uint8_t BUTTON_LEVEL_COUNT = (sizeof(buttonLevel) / sizeof(buttonLe
 static bool lastButtonState[BUTTON_COUNT]              = { false };
 static unsigned long lastButtonPressTime[BUTTON_COUNT] = { 0 };
 
-namespace {
-    static ButtonModule * g_buttonModuleInstance = nullptr;
-
-    void buttonInterruptTrampoline() {
-        if(g_buttonModuleInstance) {
-            g_buttonModuleInstance->interruptHandler();
-        }
-    }
-}    // namespace
+void buttonInterruptTrampoline() {
+    g_buttonModule.interruptHandler();
+}
 
 void ButtonModule::setup() {
     // allow sleeping when waiting for button press
@@ -29,13 +23,21 @@ void ButtonModule::setup() {
     this->enabled  = false;
 
     assert(BUTTON_LEVEL_COUNT == BUTTON_COUNT);
-    g_buttonModuleInstance = this;
-
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
         pinMode(buttonPin[i], INPUT_PULLUP);
         attachInterrupt(digitalPinToInterrupt(buttonPin[i]), buttonInterruptTrampoline, CHANGE);
         log_i("Button %d initialized on pin %d", i, buttonPin[i]);
     }
+
+    this->registerEventCallback([this](uint16_t event, void * data) {
+        ButtonEventData_t * eventData = (ButtonEventData_t *)data;
+        JsonDocument json;
+        JsonObject root  = json.to<JsonObject>();
+        root["button"]   = eventData->buttonIndex;
+        root["pressed"]  = eventData->pressed;
+        root["duration"] = eventData->pressDuration;
+        sendJsonRpcEvent("button", root);
+    });
 }
 
 void IRAM_ATTR ButtonModule::interruptHandler() {
@@ -45,19 +47,25 @@ void IRAM_ATTR ButtonModule::interruptHandler() {
 
 void ButtonModule::loop() {
     bool anyButtonPressed = false;
+    ButtonEventData_t eventData;
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
         bool pressed = digitalRead(buttonPin[i]) == buttonLevel[i];
+
+        eventData.buttonIndex = i;
+        eventData.pressed     = pressed;
+
         anyButtonPressed |= pressed;
         if(pressed && !lastButtonState[i]) {
             lastButtonPressTime[i] = millis();
-            log_i("Button %d (Pin %d) pressed!", i, buttonPin[i]);
-            this->emitEvent(BUTTON_EVENT_PRESSED, nullptr);
-
+            log_d("Button %d (Pin %d) pressed!", i, buttonPin[i]);
+            this->emitEvent(BUTTON_EVENT_PRESSED, &eventData);
             g_faceModule.displayFace(FACE_ID_love, FACE_ANIM_LOOP);
         } else if(!pressed && lastButtonState[i]) {
             unsigned long pressDuration = millis() - lastButtonPressTime[i];
-            log_i("Button %d (Pin %d) released after %lu ms!", i, buttonPin[i], pressDuration);
-            this->emitEvent(BUTTON_EVENT_RELEASED, &pressDuration);
+            log_d("Button %d (Pin %d) released after %lu ms!", i, buttonPin[i], pressDuration);
+
+            eventData.pressDuration = pressDuration;
+            this->emitEvent(BUTTON_EVENT_RELEASED, &eventData);
 
             g_faceModule.displayFace(FACE_ID_happy, FACE_ANIM_LOOP);
         }

@@ -50,6 +50,12 @@ void WebServerModule::setup() {
         JsonObject root = response.add<JsonObject>();
         uint16_t status = handleJsonRpcRequest(json, root);
 
+        // client didn't provide an id, so we can't send a response
+        if(root["id"].isNull()) {
+            response.clear();
+            return;
+        }
+
         // send response
         size_t respSize    = measureJson(root);
         uint8_t * respData = new uint8_t[respSize];
@@ -67,6 +73,20 @@ void WebServerModule::setup() {
         if(event == NETWORK_EVENT_GOT_IP) {
             server.begin();
         }
+    });
+
+    registerJsonRpcEventSender([this](const JsonDocument & json) {
+        if(ws.count() <= 0) {
+            return;
+        }
+
+        size_t respSize    = measureJson(json);
+        uint8_t * respData = new uint8_t[respSize];
+        assert(respData != nullptr);
+
+        serializeJson(json, respData, respSize);
+        ws.textAll(respData, respSize);
+        delete[] respData;
     });
 }
 

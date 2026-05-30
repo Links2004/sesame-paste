@@ -13,7 +13,13 @@
 #warning "user_config.h not found"
 #endif
 
+#ifndef NO_WEBSERVER
 #define ENABLE_WEBSERVER
+#endif
+
+#ifndef NO_SERIAL_JSON_RPC
+#define SERIAL_JSON_RPC
+#endif
 
 #if defined(BUTTON_PINS)
 #define ENABLE_BUTTON
